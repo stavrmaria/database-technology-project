@@ -15,7 +15,7 @@ using namespace std;
 Point parsePoint(string line, vector<string> attributeNames) {
     stringstream ss(line);
     string token;
-    Point point(attributeNames.size());
+    Point point;
 
     while (getline(ss, token, ' ')) {
         for (const auto& attributeName : attributeNames) {
@@ -28,12 +28,10 @@ Point parsePoint(string line, vector<string> attributeNames) {
                 // Add the value to the point based on it's type
                 if (attributeName == "id" && point.getID() == "-")
                     point.setID(attributeValue);
-                else if (attributeName == "lat")
-                    point.setLatitude(stod(attributeValue));
-                else if (attributeName == "lon")
-                    point.setLongitude(stod(attributeValue));
-                else
-                    point.addAttribute(attributeName, attributeValue);
+                else if (attributeName == "user" && point.getName() == "-")
+                    point.setName(attributeValue);
+                else if (attributeName != "id" && attributeName != "name")
+                    point.addDimension(stod(attributeValue));
             }
         }
     }

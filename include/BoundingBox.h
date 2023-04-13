@@ -2,20 +2,19 @@
 #define BoundingBox_h
 
 #include "Point.h"
+#include <limits>
 
 class BoundingBox {
 private:
-    double minX;
-    double minY;
-    double maxX;
-    double maxY;
+    int n;
+    vector<double> minCoordinates;
+    vector<double> maxCoordinates;
 public:
-    BoundingBox();
-    BoundingBox(double, double, double, double);
-    double getMinX() const;
-    double getMinY() const;
-    double getMaxX() const;
-    double getMaxY() const;
+    BoundingBox(int);
+    BoundingBox(int, vector<double>, vector<double>);
+    vector<double> getMinCoordinates() const;
+    vector<double> getMaxCoordinates() const;
+    double getN() const;
     double getArea() const;
     bool intersects(const BoundingBox& other) const;
     bool contains(const Point&) const;

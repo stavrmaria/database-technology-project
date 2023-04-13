@@ -1,75 +1,92 @@
 #include "Point.h"
 
+// empty point constructor
 Point::Point() {
-    this->dimensions = 3;
+    this->n = 0;
     this->id = "-";
-    this->lat = 0;
-    this->lon = 0;
+    this->name = "-";
 }
 
-Point::Point(int dimensions) {
-    this->dimensions = dimensions;
+// point constructor based on it's attributes
+Point::Point(string id, string name, vector<double> coordinates) {
+    this->n = this->coordinates.size();
     this->id = "-";
-    this->lat = 0;
-    this->lon = 0;
+    this->name = "-";
+    this->coordinates = coordinates;
 }
 
+// return the number of dimensions
+int Point::getN() const {
+    return this->n;
+}
+
+// return the point ID
 string Point::getID() const {
     return this->id;
 }
-        
-double Point::getLatitude() const {
-    return this->lat;
+
+
+// return the name of the point
+string Point::getName() const {
+    return this->name;
 }
 
-double Point::getLongitude() const {
-    return this->lon;
+// get the value of the dimension at index
+double Point::getDimension(int index) const {
+    if (index < 0 || index >= this->n)
+        return -1;
+    return this->coordinates.at(index);
 }
 
+// calculate and return the distance between two points
 double Point::getDistance(Point &point) const {
-    return sqrt(pow(this->lat - point.lat, 2) + pow(this->lon - point.lon, 2));
+    double total = 0;
+    for (int i = 0; i < this->n; i++)
+        total += pow(this->coordinates[i] - point.coordinates[i], 2);
+
+    return sqrt(total);
 }
 
+// get the coordinates of the point
+vector<double> Point::getCoordinates() const {
+    return this->coordinates;
+}
+
+// setter for the point's id
 void Point::setID(string id) {
     this->id = id;
 }
 
-void Point::setLatitude(double lat) {
-    this->lat = lat;
+// setter for the point's name
+void Point::setName(string name) {
+    this->name = name;
 }
 
-void Point::setLongitude(double lon) {
-    this->lon = lon;
+// setter for the point's dimension at index
+void Point::setDimension(int index, double value) {
+    if (index < 0 || index >= this->n)
+        return;
+    this->coordinates.at(index) = value;
 }
 
-void Point::addAttribute(string key, string value) {
-    attributes[key] = value;
+// add a dimension to the point
+void Point::addDimension(double value) {
+    this->coordinates.push_back(value);
+    this->n = this->coordinates.size();
 }
 
-void Point::removeAttribute(string key) {
-    this->attributes.erase(key);
-}
-
-string Point::getAttribute(string key) const {
-    return attributes.at(key);
-}
-
+// return the string representation of the point
 string Point::toString() const {
     string representation = "";
 
-    if (this->attributes.size() == 0)
-        return "empty\n";
+    if (this->coordinates.size() == 0)
+        return nullptr;
 
     representation += "id:" + this->id + ",";
-    representation += "lat:" + to_string(this->lat) + ",";
-    representation += "lon:" + to_string(this->lon) + ",";
+    representation += "name:" + this->name + ",";
     
-    for (const auto& attribute : this->attributes) {
-        if (attribute.first == "id")
-            continue;
-        
-        representation += attribute.first + ":" + attribute.second + ",";
-    }
+    for (int i = 0; i < this->n; i++)
+        representation += to_string(this->coordinates.at(i)) + ",";
 
     representation.erase(representation.length() - 1);
     return representation + "\n";
