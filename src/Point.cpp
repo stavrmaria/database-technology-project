@@ -5,6 +5,7 @@ Point::Point() {
     this->n = 0;
     this->id = "-";
     this->name = "-";
+    this->coordinates.clear();
 }
 
 // point constructor based on it's attributes

@@ -6,23 +6,28 @@
 #include <algorithm>
 #include "Point.h"
 #include "BoundingBox.h"
-#include "constants.h"
 
 using namespace std;
 
+// Class that represents the node of a tree
+struct Entry;
 class Node {
     private:
-        Node *parent;
-        BoundingBox boundingBox;
         bool isLeaf;
+        vector<Entry*> entries;
     public:
         Node();
-        BoundingBox getBoundingBox();
-        Node* getParent();
-        void setParent(Node*);
-        bool checkIsLeaf() const;
-        void setIsLeaf(bool);
-        void updateBoundingBox();
+        Node(vector<Entry*>);
+        bool isLeafNode() const;
+        Entry *findEntry(int&);
+        int nodeSize();
+        void insertEntry(Entry*);
+};
+
+struct Entry {
+    BoundingBox *boundingBox;
+    Node *childNode;
+    Point *pointID;
 };
 
 #endif

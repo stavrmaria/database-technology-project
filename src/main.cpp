@@ -5,11 +5,13 @@
 #include <sstream>
 #include <filesystem>
 
-#include "constants.h"
-#include "Point.h"
-#include "RStarTree.h"
-
 using namespace std;
+
+#include "Point.h"
+#include "Node.h"
+#include "BoundingBox.h"
+#include "RStarTree.h"
+#include "constants.h"
 
 // Parse a line and create a point based on it's attributes
 Point parsePoint(string line, vector<string> attributeNames) {
@@ -42,7 +44,9 @@ Point parsePoint(string line, vector<string> attributeNames) {
 int main() {
     // Set the points attributes
     vector<string> attributeNames = {"id", "lat", "lon","user"};
-    // RStarTree *rStarTree = new RStarTree();
+    int maxEntries = 4;
+    int dimensions = 2;
+    RStarTree *rStarTree = new RStarTree(maxEntries, dimensions);
 
     // Initialize the files
     ofstream dataFile(DATA_FILE);
@@ -51,8 +55,6 @@ int main() {
     ifstream mapFile(MAP_FILE);
 
     // Write points of the .osm file into the datafile and add them to the R-Star Tree
-    long long int blockCount = 0;
-    int currentBlockSize = 0;
     string line;
     bool afterBounds = false;
 
@@ -72,7 +74,6 @@ int main() {
     }
 
     // Read each line of the file and parse it into a Point structure
-    dataFile << "BLOCK " << blockCount++ << endl;
     while (getline(mapFile, line)) {
         if (!afterBounds) {
             // check if we've reached the <bounds> tag
@@ -84,26 +85,13 @@ int main() {
         // Node found parse it to create a new point
         if (line.find("<node ") != string::npos) {
             Point point = parsePoint(line, attributeNames);
-
-            string record = point.toString();
-            int recordSize = record.length();
-
-            if (currentBlockSize + recordSize > BLOCK_SIZE) {
-                currentBlockSize = 0;
-                dataFile << "BLOCK " << blockCount++ << endl;
-            }
-
-            // Write point into datafile
-            dataFile << record;
-            
             // Add the point in the R* Tree
-            // rStarTree->insert(point);
-
-            currentBlockSize += recordSize;
+            rStarTree->insert(point);
         }
     }
 
     // Save the R* tree index to the index file
+    // Save the R* tree data to the data file
 
     mapFile.close();
     dataFile.close();

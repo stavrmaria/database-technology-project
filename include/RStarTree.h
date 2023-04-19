@@ -5,6 +5,7 @@
 #include "Node.h"
 
 #include <iostream>
+#include <vector>
 #include <limits>
 
 using namespace std;
@@ -12,11 +13,15 @@ using namespace std;
 class RStarTree {
     private:
         Node *root;
+        int minEntries;
+        int maxEntries;
+        int dimensions;
+        Node *chooseLeaf(Node*,Point&);
+        void splitNode(Node*, Node*);
     public:
-        RStarTree();
+        RStarTree(int, int);
         ~RStarTree();
-        void insert(Point);
-        Point *search(Point);
+        void insert(Point&);
 };
 
 #endif
