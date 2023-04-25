@@ -18,10 +18,15 @@ class RStarTree {
         int dimensions;
         Node *chooseLeaf(Node*,Point&);
         void splitNode(Node*, Node*);
+        void traverse(Node*);
     public:
         RStarTree(int, int);
         ~RStarTree();
+        Node *getRoot();
         void insert(Point&);
+        void splitNode(Node*, Node*);
+        void adjustTree(Node*, Node*);
+        void traverse();
 };
 
 #endif

@@ -6,10 +6,16 @@ Node::Node() {
     this->isLeaf = false;
 }
 
+// Node constructor with no entries
+Node::Node(bool isLeaf) {
+    this->entries.clear();
+    this->isLeaf = isLeaf;
+}
+
 // Node constructor based on a vector of entries (leaf/non-leaf)
 Node::Node(vector<Entry*> entries) {
     this->entries = entries;
-    if (entries.at(0)->pointID == nullptr)
+    if (entries.at(0)->childNode != nullptr)
         this->isLeaf = false;
     else
         this->isLeaf = true;
@@ -25,8 +31,13 @@ Entry *Node::findEntry(int &index) {
     return this->entries.at(index);
 }
 
+// Return thr entries of the node
+vector<Entry*> Node::getEntries() {
+    return this->entries;
+}
+
 // Get the number of entries for this node
-int Node::nodeSize() {
+int Node::entriesSize() {
     return this->entries.size();
 }
 

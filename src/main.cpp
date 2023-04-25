@@ -44,8 +44,9 @@ Point parsePoint(string line, vector<string> attributeNames) {
 int main() {
     // Set the points attributes
     vector<string> attributeNames = {"id", "lat", "lon","user"};
-    int maxEntries = 4;
     int dimensions = 2;
+    int maxObjectSize = dimensions * sizeof(double) + 100 * sizeof(char);
+    int maxEntries = BLOCK_SIZE / maxObjectSize;
     RStarTree *rStarTree = new RStarTree(maxEntries, dimensions);
 
     // Initialize the files
@@ -89,6 +90,8 @@ int main() {
             rStarTree->insert(point);
         }
     }
+
+    rStarTree->traverse();
 
     // Save the R* tree index to the index file
     // Save the R* tree data to the data file
