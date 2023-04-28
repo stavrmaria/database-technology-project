@@ -15,23 +15,28 @@ struct Block;
 class Node {
     private:
         bool isLeaf;
+        Node *parent;
         vector<Entry*> entries;
     public:
         Node();
         Node(bool);
         Node(vector<Entry*>);
+        Node *getParent();
+        void setParent(Node*);
         bool isLeafNode() const;
         Entry *findEntry(int&);
+        Entry *findEntry(Node*);
         vector<Entry*> getEntries();
         int entriesSize();
         void insertEntry(Entry*);
+        void clearEntries();
 };
 
 // Struct that represents each entry of a given node
 struct Entry {
     BoundingBox *boundingBox = nullptr;
     Node *childNode = nullptr;
-    string pointID = "";
+    Point point;
 };
 
 #endif

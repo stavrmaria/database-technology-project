@@ -47,6 +47,7 @@ int main() {
     int dimensions = 2;
     int maxObjectSize = dimensions * sizeof(double) + 100 * sizeof(char);
     int maxEntries = BLOCK_SIZE / maxObjectSize;
+    maxEntries = 3;
     RStarTree *rStarTree = new RStarTree(maxEntries, dimensions);
 
     // Initialize the files

@@ -16,6 +16,14 @@ Point::Point(string id, string name, vector<double> coordinates) {
     this->coordinates = coordinates;
 }
 
+// Copy constructor
+Point::Point(const Point &point) {
+    this->n = point.n;
+    this->id = point.id;
+    this->name = point.name;
+    this->coordinates = point.coordinates;
+}
+
 // return the number of dimensions
 int Point::getN() const {
     return this->n;

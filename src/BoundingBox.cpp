@@ -54,21 +54,35 @@ bool BoundingBox::contains(const Point &point) const {
     return true;
 }
 
-// update the bounding's box min and max coordinates based on a new point
-void BoundingBox::update(const Point &point) {
-    bool allMinValues = true;
-    bool allMaxValues = true;
+// Update the bounding's box min and max coordinates based on a new point
+// and return the new area
+double BoundingBox::getUpdatedArea(const BoundingBox &boundingBox) {
+    vector<double> minCoordinates = this->minCoordinates;
+    vector<double> maxCoordinates = this->maxCoordinates;
+    double area = 1;
 
-    for (int i = 0; i < this->n; i++)
-        if (point.getDimension(i) < this->minCoordinates.at(i))
-            allMinValues = false;
-    
-    for (int i = 0; i < this->n; i++)
-        if (point.getDimension(i) > this->maxCoordinates.at(i))
-            allMaxValues = false;
-    
-    if (allMinValues)
-        this->minCoordinates = point.getCoordinates();
-    else if (allMaxValues)
-        this->maxCoordinates = point.getCoordinates();
+    for (int i = 0; i < this->n; i++) {
+        if (boundingBox.minCoordinates.at(i) < minCoordinates.at(i))
+            minCoordinates.at(i) = boundingBox.minCoordinates.at(i);
+        
+        if (boundingBox.maxCoordinates.at(i) > maxCoordinates.at(i))
+            maxCoordinates.at(i) = boundingBox.maxCoordinates.at(i);
+    }
+
+    for (int i = 0; i < this->n; i++) {
+        double side = maxCoordinates.at(i) - minCoordinates.at(i);
+        area *= side;
+    }
+
+    return area;
+}
+
+void BoundingBox::includeBox(const BoundingBox &box) {
+    for (int i = 0; i < this->n; i++) {
+        if (box.minCoordinates.at(i) < this->minCoordinates.at(i))
+            this->minCoordinates.at(i) = box.minCoordinates.at(i);
+        
+        if (box.maxCoordinates.at(i) > this->maxCoordinates.at(i))
+            this->maxCoordinates.at(i) = box.maxCoordinates.at(i);
+    }
 }

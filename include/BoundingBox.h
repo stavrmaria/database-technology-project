@@ -18,7 +18,8 @@ public:
     double getArea() const;
     bool intersects(const BoundingBox& other) const;
     bool contains(const Point&) const;
-    void update(const Point&);
+    double getUpdatedArea(const BoundingBox&);
+    void includeBox(const BoundingBox&);
 };
 
 #endif
