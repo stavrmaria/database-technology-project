@@ -16,3 +16,11 @@ The R*-tree supports the following functions:
 ## Note
 - Each block has a size of 1KB = 1024 bytes
 - main.cpp creates 2 files indexfile and datafile
+
+## Todo List
+- [X] Insert
+- [ ] Change entries (save only the coordinates)
+- [ ] Delete
+- [ ] Skyline queries
+- [ ] Support range queries
+- [ ] Support k-nn queries

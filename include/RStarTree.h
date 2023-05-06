@@ -18,7 +18,7 @@ class RStarTree {
         int dimensions;
         Node *chooseLeaf(Node*,Point&);
         void splitNode(Node*, Node*);
-        void adjustTree(Node*, Node*);
+        pair<Node*, Node*> adjustTree(Node*, Node*);
         void pickSeeds(Node*, int&, int&);
         void pickNext(int&, int&, int&, vector<Entry*>);
         void traverse(Node*);

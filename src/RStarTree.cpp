@@ -24,7 +24,7 @@ void RStarTree::insert(Point &point) {
     Node *leafNode = chooseLeaf(currentNode, point);
     Node *newNode = nullptr;
     Entry *newEntry = new Entry();
-    
+
     newEntry->childNode = nullptr;
     newEntry->boundingBox = new BoundingBox(this->dimensions, point.getCoordinates(), point.getCoordinates());
     newEntry->point = point;
@@ -37,7 +37,9 @@ void RStarTree::insert(Point &point) {
     }
 
     // Adjust the structure of the tree based on the insertion
-    adjustTree(leafNode, newNode);
+    pair<Node*, Node*> adjustedNodes = adjustTree(leafNode, newNode);
+    leafNode = adjustedNodes.first;
+    newNode = adjustedNodes.second;
 
     // The node split propagation caused the root to split, create a new root
     if (leafNode->getParent() == nullptr && newNode != nullptr) {
@@ -59,8 +61,10 @@ void RStarTree::insert(Point &point) {
 
         parentNode->insertEntry(firstEntry);
         parentNode->insertEntry(secondEntry);
-        this->root = parentNode;
+        currentNode = parentNode;
     }
+
+    this->root = currentNode;
 }
 
 // Find the appropriate leaf for a given point based on the MBBs
@@ -156,44 +160,43 @@ void RStarTree::pickNext(int &selected, int &firstSeedIndex, int &secondSeedInde
     }
 }
 
-void RStarTree::adjustTree(Node *currentNode, Node *newNode) {
-    Node *secondParentNode = new Node(false);
+pair<Node*, Node*> RStarTree::adjustTree(Node *currentNode, Node *newNode) {
     Entry *newEntry = new Entry();
 
-    // If the current node is the root stop
-    if (currentNode == nullptr)
-        return;
+    // While the current node is the not root move upwards
+    while (currentNode->getParent() != nullptr) {
+        // Adjust the MBB of the parent entry so that it tightly encloses all entry rectangles in the current node
+        Node *parentNode = currentNode->getParent();
+        Entry *currentNodeEntry = parentNode->findEntry(currentNode);
 
-    // Adjust the MBB of the parent entry so that it tightly encloses all entry rectangles in the current node
-    Node *parentNode = currentNode->getParent();
-    Entry *currentNodeEntry = parentNode->findEntry(currentNode);
+        currentNodeEntry->boundingBox = new BoundingBox(this->dimensions);
+        for (auto entry : currentNode->getEntries()) {
+            currentNodeEntry->boundingBox->includeBox(*entry->boundingBox);
+        }
 
-    if (currentNodeEntry == nullptr)
-        return;
+        if (newNode != nullptr) {
+            newEntry->childNode = newNode;
+            newNode->setParent(parentNode);
+            newEntry->boundingBox = new BoundingBox(this->dimensions);
 
-    currentNodeEntry->boundingBox = new BoundingBox(this->dimensions);
-    for (auto entry : currentNode->getEntries()) {
-        currentNodeEntry->boundingBox->includeBox(*entry->boundingBox);
+            for (auto entry : newNode->getEntries()) {
+                newEntry->boundingBox->includeBox(*entry->boundingBox);
+            }
+            parentNode->insertEntry(newEntry);
+            
+            if (parentNode->entriesSize() > this->maxEntries) {
+                Node *secondParentNode = new Node(false);
+                splitNode(parentNode, secondParentNode);
+                newNode = secondParentNode;
+            } else {
+                newNode = nullptr;
+            }
+        }
+
+        currentNode = parentNode;
     }
 
-    // Propagate node split upward
-    if (newNode != nullptr) {
-        newEntry->childNode = newNode;
-        newNode->setParent(parentNode);
-        newEntry->boundingBox = new BoundingBox(this->dimensions);
-
-        for (auto entry : newNode->getEntries()) {
-            newEntry->boundingBox->includeBox(*entry->boundingBox);
-        }
-        parentNode->insertEntry(newEntry);
-        
-        if (parentNode->entriesSize() > this->maxEntries) {
-            splitNode(parentNode, secondParentNode);
-        }
-    }
-
-    // Move up to next level
-    adjustTree(parentNode, secondParentNode);
+    return make_pair(currentNode, newNode);
 }
 
 void RStarTree::pickSeeds(Node *currentNode, int &firstSeedIndex, int &secondSeedIndex) {
