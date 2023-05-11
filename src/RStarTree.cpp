@@ -6,6 +6,7 @@ RStarTree::RStarTree(int maxEntries, int dimensions) {
     this->root = new Node(true);
     this->maxEntries = maxEntries;
     this->minEntries = (int)(maxEntries / 2);
+    this->nodesCount = 1;
 }
 
 // Recursively delete the R* Tree
@@ -18,6 +19,10 @@ Node *RStarTree::getRoot() {
     return this->root;
 }
 
+unsigned long RStarTree::getNodesCount() const {
+    return this->nodesCount;
+}
+
 // Insert a point into the R* Tree
 void RStarTree::insert(Point &point) {
     Node *currentNode = this->root;
@@ -27,7 +32,7 @@ void RStarTree::insert(Point &point) {
 
     newEntry->childNode = nullptr;
     newEntry->boundingBox = new BoundingBox(this->dimensions, point.getCoordinates(), point.getCoordinates());
-    newEntry->point = point;
+    newEntry->id = point.getID();
     leafNode->insertEntry(newEntry);
 
     // There is not available space to place the point
@@ -62,9 +67,11 @@ void RStarTree::insert(Point &point) {
         parentNode->insertEntry(firstEntry);
         parentNode->insertEntry(secondEntry);
         currentNode = parentNode;
+        this->nodesCount++;
     }
 
     this->root = currentNode;
+    this->nodesCount++;
 }
 
 // Find the appropriate leaf for a given point based on the MBBs
@@ -100,7 +107,6 @@ Node *RStarTree::chooseLeaf(Node *node,Point &point) {
 void RStarTree::splitNode(Node *currentNode, Node *newNode) {
     int firstSeedIndex = 0;
     int secondSeedIndex = 0;
-    int counter = 0;
     vector<Entry*> entries = currentNode->getEntries();
 
     // Pick first entry for each group
@@ -230,7 +236,7 @@ void  RStarTree::traverse(Node *currentNode) {
         // Process leaf node
         cout << "[";
         for (auto entry : currentNode->getEntries()) {
-            cout << entry->point.getID() << ",";
+            cout << entry->id << ",";
         }
         cout << "]" << endl;
     } else {

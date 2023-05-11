@@ -11,7 +11,7 @@ using namespace std;
 
 class Point {
     private:
-        string id;
+        unsigned long int id;
         string name;
         vector<double> coordinates;
         int n;
@@ -20,12 +20,12 @@ class Point {
         Point(const Point&);
         Point(string, string, vector<double>);
         int getN() const;
-        string getID() const;
+        unsigned long int getID() const;
         string getName() const;
         double getDimension(int) const;
         double getDistance(Point&) const;
         vector<double> getCoordinates() const;
-        void setID(string);
+        void setID(unsigned long int);
         void setName(string);
         void setDimension(int, double);
         void addDimension(double);

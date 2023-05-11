@@ -3,7 +3,7 @@
 // empty point constructor
 Point::Point() {
     this->n = 0;
-    this->id = "-";
+    this->id = 0;
     this->name = "-";
     this->coordinates.clear();
 }
@@ -11,7 +11,7 @@ Point::Point() {
 // point constructor based on it's attributes
 Point::Point(string id, string name, vector<double> coordinates) {
     this->n = this->coordinates.size();
-    this->id = "-";
+    this->id = -1;
     this->name = "-";
     this->coordinates = coordinates;
 }
@@ -30,7 +30,7 @@ int Point::getN() const {
 }
 
 // return the point ID
-string Point::getID() const {
+unsigned long int Point::getID() const {
     return this->id;
 }
 
@@ -62,7 +62,7 @@ vector<double> Point::getCoordinates() const {
 }
 
 // setter for the point's id
-void Point::setID(string id) {
+void Point::setID(unsigned long int id) {
     this->id = id;
 }
 
@@ -91,14 +91,14 @@ string Point::toString() const {
     if (this->coordinates.size() == 0)
         return nullptr;
 
-    representation += "id:" + this->id + ",";
+    representation += "id:" + to_string(this->id) + ",";
     representation += "name:" + this->name + ",";
     
     for (int i = 0; i < this->n; i++)
         representation += to_string(this->coordinates.at(i)) + ",";
 
     representation.erase(representation.length() - 1);
-    return representation + "\n";
+    return representation;
 }
 
 ostream &operator<<(ostream &stream,const Point &point){

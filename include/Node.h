@@ -36,7 +36,7 @@ class Node {
 struct Entry {
     BoundingBox *boundingBox = nullptr;
     Node *childNode = nullptr;
-    Point point;
+    unsigned long id = 0;
 };
 
 #endif
