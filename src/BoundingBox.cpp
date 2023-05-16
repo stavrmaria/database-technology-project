@@ -86,3 +86,15 @@ void BoundingBox::includeBox(const BoundingBox &box) {
             this->maxCoordinates.at(i) = box.maxCoordinates.at(i);
     }
 }
+
+// This function checks whether or not this bounding box intersects with this one
+bool BoundingBox::intersects(const BoundingBox& other) const {
+    for (int i = 0; i < this->n; i++) {
+        if (this->minCoordinates.at(i) > other.maxCoordinates.at(i))
+            return false;
+        if (this->maxCoordinates.at(i) < other.minCoordinates.at(i))
+            return false;
+    }
+
+    return true;
+}

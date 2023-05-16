@@ -1,4 +1,11 @@
 #include "RStarTree.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include "pugixml.hpp"
+
+using namespace std;
 
 // Save R* Tree into the indexfile
 int RStarTree::saveIndex(const string &indexFileName) {
@@ -41,56 +48,6 @@ void RStarTree::saveIndex(fstream& indexFile, Node *currentNode) {
     }
 }
 
-// Parse a line and create a point based on it's attributes
-Point parsePoint(string line) {
-    stringstream ss(line);
-    string token;
-    Point point;
-
-    while (getline(ss, token, ' ')) {
-        for (const auto& attributeName : attributeNames) {
-            if (token.find(attributeName + "=") != string::npos) {
-                // Get the value of this attribute
-                size_t start = token.find('"') + 1;
-                size_t end = token.find('"', start);
-                string attributeValue = token.substr(start, end - start);
-
-                // Add the value to the point based on it's type
-                if (attributeName == "id" && point.getID() == 0)
-                    point.setID(stoul(attributeValue));
-                else if (attributeName == "user" && point.getName() == "-")
-                    point.setName(attributeValue);
-                else if (attributeName != "id" && attributeName != "name")
-                    point.addDimension(stod(attributeValue));
-            }
-        }
-    }
-    
-    return point;
-}
-
-Point findObjectById(unsigned long &id) {
-    ifstream mapFile(MAP_FILE);
-    string line;
-    bool afterBounds = false;
-
-    // Read each line of the file and parse it into a Point structure
-    while (getline(mapFile, line)) {
-        if (line.find("<node id=") == std::string::npos)
-            continue;
-
-        // Extract the ID from the line
-        size_t startPos = line.find("\"") + 1;
-        size_t endPos = line.find("\"", startPos);
-        unsigned long currentID = stoul(line.substr(startPos, endPos - startPos));
-
-        // Check if the ID matches the target ID
-        if (id == currentID)
-            return parsePoint(line);
-    }
-
-    return Point();
-}
 
 int RStarTree::saveData(const string &dataFileName) {
     fstream dataFile;
@@ -115,7 +72,7 @@ void RStarTree::saveData(fstream& dataFile, Node *currentNode) {
     }
 
     unsigned long blockID = 0;
-    dataFile << "BLOCKID" << to_string(blockID++) << endl;
+    dataFile << "BLOCK" << to_string(blockID++) << endl;
     dataFile << "nodes:" << this->nodesCount << endl;
 
     stack<Node*> nodeStack;
@@ -125,10 +82,10 @@ void RStarTree::saveData(fstream& dataFile, Node *currentNode) {
         nodeStack.pop();
 
         if (current->isLeafNode()) {
-            dataFile << "BLOCKID" << to_string(blockID++) << endl;
+            dataFile << "BLOCK" << to_string(blockID++) << endl;
             dataFile << current->getEntries().size() << endl;
             for (auto entry : current->getEntries()) {
-                Point point = findObjectById(entry->id);
+                Point point = findObjectById(*(entry->id), maxObjectSize);
                 dataFile << point << endl;
             }
         }
@@ -140,4 +97,91 @@ void RStarTree::saveData(fstream& dataFile, Node *currentNode) {
             nodeStack.push(entry->childNode);
         }
     }
+}
+
+// Parse a line and create a point based on it's attributes
+Point parsePoint(string line) {
+    Point point;
+
+    vector<string> row;
+    stringstream ss(line);
+    string cell;
+
+    while (getline(ss, cell, ',')) {
+        row.push_back(cell);
+    }
+    point.setID(stoul(row.at(0)));
+    if (row.at(1) != "")
+        point.setName(row.at(1));
+    for (int i = 2; i < row.size(); i++)
+        point.addDimension(stod(row.at(i)));
+    
+    return point;
+}
+
+Point findObjectById(ID id, int &pointsPerBlock) {
+    ifstream datafile(DATA_FILE);
+    unsigned int lineIndex = 1;
+    unsigned int currentLine = 1;
+    string line;
+
+    // Read each line of the file unit you find the first block
+    while (getline(datafile, line)) {
+        if (line.find("BLOCK1") != string::npos)
+            break;
+        lineIndex++;
+    }
+    lineIndex++;
+
+    // Calculate the line index of the desired point
+    currentLine = lineIndex;
+    lineIndex += (id.blockID - 1) * (pointsPerBlock + 1) + id.slot;
+    while (getline(datafile, line)) {
+        if (currentLine == lineIndex) {
+            break;
+        }
+        currentLine++;
+    }
+
+    datafile.close();
+    return parsePoint(line);
+}
+
+// Convert the .osm file into a .csv file based on it's the attributes
+void writeToCSV(const string& csvFileName, const string& mapFileName, const vector<string>& attributeNames, unsigned int &pointCount) {
+    ofstream csvFile(csvFileName);
+    pugi::xml_document doc;
+
+    if (doc.load_file(mapFileName.c_str())) {
+        vector<vector<string>> csvData;
+        // Traverse the XML and extract the desired data
+        for (const auto& node : doc.select_nodes("//node")) {
+            vector<string> rowData;
+
+            for (const auto& attributeName : attributeNames) {
+                rowData.push_back(node.node().attribute(attributeName.c_str()).value());
+            }
+
+            csvData.push_back(rowData);
+            pointCount++;
+        }
+
+        // Write the data to the CSV file
+            for (const auto& row : csvData) {
+                for (size_t i = 0; i < row.size(); ++i) {
+                    csvFile << row[i];
+                    if (i != row.size() - 1) {
+                        csvFile << ",";
+                    }
+                }
+
+                csvFile << endl;
+            }
+
+        cout << "CSV file created successfully." << endl;
+    } else {
+        cout << "Failed to load XML file." << endl;
+    }
+
+    csvFile.close();
 }

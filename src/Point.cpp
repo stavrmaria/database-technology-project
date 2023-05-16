@@ -9,10 +9,10 @@ Point::Point() {
 }
 
 // point constructor based on it's attributes
-Point::Point(string id, string name, vector<double> coordinates) {
+Point::Point(unsigned long id, string name, vector<double> coordinates) {
     this->n = this->coordinates.size();
-    this->id = -1;
-    this->name = "-";
+    this->id = id;
+    this->name = name;
     this->coordinates = coordinates;
 }
 
@@ -91,8 +91,8 @@ string Point::toString() const {
     if (this->coordinates.size() == 0)
         return nullptr;
 
-    representation += "id:" + to_string(this->id) + ",";
-    representation += "name:" + this->name + ",";
+    representation += to_string(this->id) + ",";
+    representation += this->name + ",";
     
     for (int i = 0; i < this->n; i++)
         representation += to_string(this->coordinates.at(i)) + ",";

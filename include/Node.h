@@ -11,7 +11,7 @@ using namespace std;
 
 // Class that represents the node of a tree
 struct Entry;
-struct Block;
+struct ID;
 class Node {
     private:
         bool isLeaf;
@@ -36,7 +36,12 @@ class Node {
 struct Entry {
     BoundingBox *boundingBox = nullptr;
     Node *childNode = nullptr;
-    unsigned long id = 0;
+    ID *id = nullptr;
+};
+
+struct ID {
+    unsigned long blockID = 0;
+    unsigned long slot = 0;
 };
 
 #endif

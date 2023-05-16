@@ -19,51 +19,77 @@ int main() {
     int maxObjectSize = dimensions * sizeof(double) + 100 * sizeof(char);
     int maxEntries = BLOCK_SIZE / maxObjectSize;
     maxEntries = 3;
-    RStarTree *rStarTree = new RStarTree(maxEntries, dimensions);
-
-    // Initialize the files
-    ofstream dataFile(DATA_FILE);
-    ifstream mapFile(MAP_FILE);
-
-    // Write points of the .osm file into the datafile and add them to the R-Star Tree
+    RStarTree *rStarTree = new RStarTree(maxEntries, dimensions, maxObjectSize);
+    unsigned int blockCount = 0;
+    unsigned int pointCount = 0;
+    unsigned int slot = 0;
+    unsigned int currentBlockSize = 0;
+    int pointsPerBlock = 0;
     string line;
-    bool afterBounds = false;
+
+    // Tranform the map file to a csv file that has
+    // the format: id, lat, lon, ...
+    writeToCSV(CSV_FILE, MAP_FILE, attributeNames, pointCount);
+
+    // Write the data of the .csv file into blocks
+    fstream dataFile(DATA_FILE, ios::out);
+    ifstream csvFile(CSV_FILE);
+    ofstream indexFile(INDEX_FILE);
+    cout << maxObjectSize << endl;
 
     if (!dataFile.is_open()) {
         cerr << "Error: could not open file " << DATA_FILE << endl;
         return 1;
     }
 
-    if (!mapFile.is_open()) {
-        cerr << "Error: could not open file " << MAP_FILE << endl;
+    if (!csvFile.is_open()) {
+        cerr << "Error: could not open file " << CSV_FILE << endl;
         return 1;
     }
 
-    // Read each line of the file and parse it into a Point structure
-    while (getline(mapFile, line)) {
-        if (!afterBounds) {
-            // check if we've reached the <bounds> tag
-            if (line.find("<bounds") != string::npos)
-                afterBounds = true;
-            continue;
-        }
-
-        // Node found parse it to create a new point
-        if (line.find("<node ") != string::npos) {
-            Point point = parsePoint(line);
-            // Add the point in the R* Tree
-            rStarTree->insert(point);
-        }
+    if (!indexFile.is_open()) {
+        cerr << "Error: could not open file " << INDEX_FILE << endl;
+        return 1;
     }
 
-    // rStarTree->traverse();
+    pointsPerBlock = int(BLOCK_SIZE / maxObjectSize);
+    dataFile << "BLOCK" << blockCount++ << endl;
+    dataFile << "block size:" << BLOCK_SIZE << endl;
+    dataFile << "points:" << pointCount << endl;
+    dataFile << "points/block:" << pointsPerBlock << endl;
+    dataFile << "dimensions:" << dimensions << endl;
+    dataFile << "capacity:" << maxEntries << endl;
+    dataFile << "BLOCK" << blockCount << endl;
+    // Read each line of the file and parse it into a Point structure
+    while (getline(csvFile, line)) {
+        Point point = parsePoint(line);
+        string record = point.toString();
+
+        if (currentBlockSize + maxObjectSize > BLOCK_SIZE) {
+            currentBlockSize = 0;
+            slot = 0;
+            dataFile << "BLOCK" << ++blockCount << endl;
+        }
+
+        // Write point into datafile and insert it to the tree
+        dataFile << record << endl;
+        rStarTree->insert(point, blockCount, slot);
+        slot++;
+        currentBlockSize += maxObjectSize;
+    }
 
     // Save the R* tree index to the index file and the data file
     if (rStarTree->saveIndex(INDEX_FILE) == 1)
         return 1;
-    if (rStarTree->saveData(DATA_FILE) == 1)
-        return 1;
 
-    mapFile.close();
+    BoundingBox bb(dimensions, vector<double>{4.5, 2}, vector<double> {8, 5});
+    vector<ID> res = rStarTree->rangeQuery(bb);
+    for (int i = 0; i < res.size(); i++)
+        cout << findObjectById(res.at(i), pointsPerBlock).getID() << endl;
+    
+    indexFile.close();
+    dataFile.close();
+    csvFile.close();
+
     return 0;
 }

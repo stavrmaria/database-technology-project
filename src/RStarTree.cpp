@@ -1,12 +1,13 @@
 #include "RStarTree.h"
 
 // Basic constructor for the R* Tree
-RStarTree::RStarTree(int maxEntries, int dimensions) {
+RStarTree::RStarTree(int maxEntries, int dimensions, int maxObjectSize) {
     this->dimensions = dimensions;
     this->root = new Node(true);
     this->maxEntries = maxEntries;
     this->minEntries = (int)(maxEntries / 2);
     this->nodesCount = 1;
+    this->maxObjectSize = maxObjectSize;
 }
 
 // Recursively delete the R* Tree
@@ -24,7 +25,7 @@ unsigned long RStarTree::getNodesCount() const {
 }
 
 // Insert a point into the R* Tree
-void RStarTree::insert(Point &point) {
+void RStarTree::insert(Point &point, unsigned int &blockID, unsigned int &slot) {
     Node *currentNode = this->root;
     Node *leafNode = chooseLeaf(currentNode, point);
     Node *newNode = nullptr;
@@ -32,7 +33,9 @@ void RStarTree::insert(Point &point) {
 
     newEntry->childNode = nullptr;
     newEntry->boundingBox = new BoundingBox(this->dimensions, point.getCoordinates(), point.getCoordinates());
-    newEntry->id = point.getID();
+    newEntry->id = new ID;
+    newEntry->id->blockID = blockID;
+    newEntry->id->slot = slot;
     leafNode->insertEntry(newEntry);
 
     // There is not available space to place the point
@@ -224,30 +227,4 @@ void RStarTree::pickSeeds(Node *currentNode, int &firstSeedIndex, int &secondSee
             }
         }
     }
-}
-
-// Traverse the tree and print it's leaves
-void  RStarTree::traverse(Node *currentNode) {
-    if (currentNode == nullptr) {
-        return;
-    }
-
-    if (currentNode->isLeafNode()) {
-        // Process leaf node
-        cout << "[";
-        for (auto entry : currentNode->getEntries()) {
-            cout << entry->id << ",";
-        }
-        cout << "]" << endl;
-    } else {
-        // Process non-leaf node
-        for (auto entry : currentNode->getEntries()) {
-            // Traverse child node recursively
-            traverse(entry->childNode);
-        }
-    }
-}
-
-void  RStarTree::traverse() {
-    traverse(this->root);
 }

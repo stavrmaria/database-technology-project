@@ -1,5 +1,6 @@
 CC=g++
 CXXFLAGS=-std=c++17 -Wall -Wextra -pedantic
+LDFLAGS := -lpugixml
 
 SRCDIR=src
 INCDIR=include
