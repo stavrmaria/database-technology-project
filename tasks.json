@@ -8,7 +8,14 @@
 			"args": [
 				"-std=c++17",
 				"-I${workspaceFolder}\\include",
-				"${workspaceFolder}\\src\\*.cpp",
+				"${workspaceFolder}\\src\\main.cpp",
+				"${workspaceFolder}\\src\\pugixml.cpp",
+				"${workspaceFolder}\\src\\Node.cpp",
+				"${workspaceFolder}\\src\\Point.cpp",
+				"${workspaceFolder}\\src\\BoundingBox.cpp",
+				"${workspaceFolder}\\src\\fileHanding.cpp",
+				"${workspaceFolder}\\src\\Queries.cpp",
+				"${workspaceFolder}\\src\\RStarTree.cpp",
 				"-o",
 				"${workspaceFolder}\\program.exe"
 			],
