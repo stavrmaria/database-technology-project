@@ -30,6 +30,10 @@ class Node {
         int entriesSize();
         void insertEntry(Entry*);
         void clearEntries();
+        void adjustBoundingBoxes();
+        void clearBoudingBox();
+        void deleteEntry(Entry*);
+        void removeChild(Node *);
 };
 
 // Struct that represents each entry of a given node

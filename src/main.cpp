@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include <filesystem>
+//#include <filesystem>
 
 using namespace std;
 
@@ -13,7 +13,7 @@ using namespace std;
 #include "RStarTree.h"
 #include "constants.h"
 
-int main() {
+int main(void) {
     // Set the points attributes
     int dimensions = 2;
     int maxObjectSize = dimensions * sizeof(double) + 100 * sizeof(char);

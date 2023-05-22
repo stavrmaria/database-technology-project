@@ -228,3 +228,127 @@ void RStarTree::pickSeeds(Node *currentNode, int &firstSeedIndex, int &secondSee
         }
     }
 }
+
+// Traverse the tree and print it's leaves
+void  RStarTree::traverse(Node *currentNode) {
+    if (currentNode == nullptr) {
+        return;
+    }
+
+    if (currentNode->isLeafNode()) {
+        // Process leaf node
+        cout << "[";
+        for (auto entry : currentNode->getEntries()) {
+            cout << entry->id << ",";
+        }
+        cout << "]" << endl;
+    } else {
+        // Process non-leaf node
+        for (auto entry : currentNode->getEntries()) {
+            // Traverse child node recursively
+            traverse(entry->childNode);
+        }
+    }
+}
+
+void  RStarTree::traverse() {
+    traverse(this->root);
+}
+
+void RStarTree::deletePoint(Point& point) {
+    // Find node containing record
+    Node* leafNode = chooseLeaf(root, point);
+
+    // Stop if the record was not found
+    if (leafNode == nullptr) {
+        return;
+    }
+
+    Entry* entry=leafNode->findEntry(leafNode);
+    
+    // Delete record
+    leafNode->deleteEntry(entry);
+
+    // Propagate changes
+    condenseTree(leafNode);
+
+    // Shorten tree
+    if (root->entriesSize() == 1 && !root->isLeafNode()) {
+        Node* newRoot = root->getEntries()[0]->childNode;
+        newRoot->setParent(nullptr);
+        delete root;
+        root = newRoot;
+    }
+}
+
+
+void RStarTree:: condenseTree(Node* leafNode) {
+    Node* currentNode = leafNode->getParent();
+    vector<Node*> removedNodes;
+
+    while (currentNode != nullptr) {
+        if (currentNode->entriesSize() < minEntries) {
+            removedNodes.push_back(currentNode);
+            currentNode = currentNode->getParent();
+        } else {
+            currentNode->adjustBoundingBoxes();
+            currentNode = currentNode->getParent();
+        }
+    }
+
+    for (auto& removedNode : removedNodes) {
+        for (auto& entry : removedNode->getEntries()) {
+            insertEntry(entry);
+        }
+
+        deleteChild(removedNode);
+    }
+}
+
+void RStarTree::insertEntry(Entry* entry) {
+    Node* targetNode = chooseLeaf(root, entry);
+    targetNode->insertEntry(entry);
+
+    if (targetNode->entriesSize() > maxEntries) {
+        Node* newNode = new Node(true);
+        splitNode(targetNode, newNode);
+        adjustTree(targetNode, newNode);
+    }
+}
+
+void RStarTree::deleteChild(Node* childNode) {
+    Node* parentNode = childNode->getParent();
+
+    if (parentNode != nullptr) {
+        parentNode->removeChild(childNode);
+
+        if (parentNode->entriesSize() < minEntries) {
+            condenseTree(parentNode);
+        }
+    }
+
+    delete childNode;
+}
+
+Node  *RStarTree::chooseLeaf(Node* currentNode, Entry* entry){
+        if (currentNode->isLeafNode()) {
+        // Check if any entry in the leaf node matches the given entry
+        for (Entry* nodeEntry : currentNode->getEntries()) {
+            if (nodeEntry == entry) {
+                return currentNode;
+            }
+        }
+    } else {
+        // Recursively search in the child nodes
+        for (Entry* nodeEntry : currentNode->getEntries()) {
+            if (nodeEntry->childNode) {
+                Node* foundNode = chooseLeaf(nodeEntry->childNode, entry);
+                if (foundNode) {
+                    return foundNode;
+                }
+            }
+        }
+    }
+
+    return nullptr; // Entry not found
+}
