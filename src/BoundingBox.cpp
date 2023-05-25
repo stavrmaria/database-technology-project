@@ -98,3 +98,32 @@ bool BoundingBox::intersects(const BoundingBox& other) const {
 
     return true;
 }
+
+// Calculate and return the overlap between two bounding boxes
+double BoundingBox::calculateOverlap(const BoundingBox& other) const {
+    double overlap = 1;
+
+    // If the bounding boxes do not intersect at all return 0
+    if (!this->intersects(other))
+        return 0;
+
+    // Otherwise calculate the overlap
+    for (int i = 0; i < this->n; i++) {
+        double currentLength = min(this->maxCoordinates.at(i), other.maxCoordinates.at(i)) - max(this->minCoordinates.at(i), other.minCoordinates.at(i));
+        overlap *= currentLength;
+    }
+
+    return overlap;
+}
+
+// Calculate and return the margin between two bounding boxes
+double BoundingBox::calculateMargin() const {
+    double margin = 0;
+
+    for (int i = 0; i < this->n; i++) {
+        double edgeLength = this->maxCoordinates.at(i) - this->minCoordinates.at(i);
+        margin += edgeLength;
+    }
+
+    return margin;
+}

@@ -15,6 +15,7 @@ struct ID;
 class Node {
     private:
         bool isLeaf;
+        int level;
         Node *parent;
         vector<Entry*> entries;
     public:
@@ -28,8 +29,14 @@ class Node {
         Entry *findEntry(Node*);
         vector<Entry*> getEntries();
         int entriesSize();
+        void setLevel(int);
+        int getLevel() const;
         void insertEntry(Entry*);
         void clearEntries();
+        void adjustBoundingBoxes();
+        void clearBoudingBox();
+        void deleteEntry(Entry*);
+        void removeChild(Node *);
 };
 
 // Struct that represents each entry of a given node

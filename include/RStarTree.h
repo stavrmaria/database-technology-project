@@ -7,7 +7,6 @@
 #include <stack>
 #include <sstream>
 
-
 #include <iostream>
 #include <vector>
 #include <limits>
@@ -28,7 +27,10 @@ class RStarTree {
         pair<Node*, Node*> adjustTree(Node*, Node*);
         void pickSeeds(Node*, int&, int&);
         void pickNext(int&, int&, int&, vector<Entry*>);
-
+        void condenseTree(Node*);
+        void insertEntry(Entry*);
+        void deleteChild(Node*);
+        Node *chooseLeaf(Node*,Entry*);
         void saveIndex(fstream&, Node*);
         void saveData(fstream&, Node*);
     public:
@@ -37,6 +39,7 @@ class RStarTree {
         Node *getRoot();
         unsigned long getNodesCount() const;
         void insert(Point&, unsigned int&, unsigned int&);
+        void deletePoint(Point&);
 
         int saveIndex(const string&);
         int saveData(const string&);

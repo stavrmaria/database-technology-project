@@ -50,9 +50,19 @@ Entry *Node::findEntry(Node *node) {
     }
 }
 
-// Return thr entries of the node
+// Return the entries of the node
 vector<Entry*> Node::getEntries() {
     return this->entries;
+}
+
+// Return the level of the node
+int Node::getLevel() const {
+    return this->level;
+}
+
+// Set the level of the node
+void Node::setLevel(int level) {
+    this->level = level;
 }
 
 // Set the parent of the node
@@ -73,4 +83,49 @@ void Node::insertEntry(Entry* entry) {
 // Clear all the entries from the node
 void Node::clearEntries() {
     this->entries.clear();
+}
+
+void Node::clearBoudingBox(){
+    for(auto entry: entries){
+        delete entry->boundingBox;
+        entry->boundingBox=nullptr;
+    }
+}
+
+void Node::adjustBoundingBoxes() {
+    if (entries.empty()) {
+        // No entries in the node, clear the bounding box
+        clearBoudingBox();
+    } else {
+        // Update the bounding box based on the entries
+        clearBoudingBox();
+        for (auto entry : entries) {
+            entry->boundingBox->includeBox(*(entry->boundingBox));
+        }
+    }
+
+    if (parent != nullptr) {
+        // Recursively adjust the parent's bounding box
+        parent->adjustBoundingBoxes();
+    }
+}
+
+void Node:: deleteEntry(Entry* entry) {
+    Node* parentNode = entry->childNode->getParent();
+    parentNode->deleteEntry(entry);
+
+    // Adjust bounding boxes on the path to the root
+    while (parentNode != nullptr) {
+        parentNode->adjustBoundingBoxes();
+        parentNode = parentNode->getParent();
+    }
+}
+
+void Node::removeChild(Node *child) {
+    for (int i = 0; i < entries.size(); i++) {
+        if (entries[i]->childNode == child) {
+            entries.erase(entries.begin() + i);
+            return;
+        }
+    }
 }

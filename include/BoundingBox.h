@@ -20,6 +20,8 @@ public:
     bool contains(const Point&) const;
     double getUpdatedArea(const BoundingBox&);
     void includeBox(const BoundingBox&);
+    double calculateOverlap(const BoundingBox&) const;
+    double calculateMargin() const;
 };
 
 #endif
