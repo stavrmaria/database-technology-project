@@ -87,6 +87,8 @@ int main() {
     for (int i = 0; i < res.size(); i++)
         cout << findObjectById(res.at(i), pointsPerBlock).getID() << endl;
     
+    rStarTree->display();
+    
     indexFile.close();
     dataFile.close();
     csvFile.close();

@@ -42,14 +42,15 @@ void RStarTree::display() {
     }
 
     stack<Node*> nodeStack;
+    int p = 8;
     nodeStack.push(this->root);
     while (!nodeStack.empty()) {
         Node *current = nodeStack.top();
         nodeStack.pop();
-        if (current->isLeafNode()) {
+        if (current->isLeafNode() && current->getEntries().size() > 0) {
             cout << "[";
             for (auto entry : current->getEntries()) {
-                cout << findObjectById(*(entry->id), maxObjectSize) << endl;
+                cout << "(" << findObjectById(*(entry->id), p) << ") ";
             }
             cout << "]" << endl;
         }
