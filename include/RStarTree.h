@@ -33,6 +33,7 @@ class RStarTree {
         Node *chooseLeaf(Node*,Entry*);
         void saveIndex(fstream&, Node*);
         void saveData(fstream&, Node*);
+        void display();
     public:
         RStarTree(int, int, int);
         ~RStarTree();

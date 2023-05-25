@@ -34,3 +34,29 @@ vector<ID> RStarTree::rangeQuery(BoundingBox &boundingBox) {
 
     return results;
 }
+
+// Display the R* Tree using DFS traversal
+void RStarTree::display() {
+    if (this->root == nullptr) {
+        return;
+    }
+
+    stack<Node*> nodeStack;
+    nodeStack.push(this->root);
+    while (!nodeStack.empty()) {
+        Node *current = nodeStack.top();
+        nodeStack.pop();
+        if (current->isLeafNode()) {
+            cout << "[";
+            for (auto entry : current->getEntries()) {
+                cout << findObjectById(*(entry->id), maxObjectSize) << endl;
+            }
+            cout << "]" << endl;
+        }
+        for (auto entry : current->getEntries()) {
+            if (entry->childNode == nullptr)
+                continue;
+            nodeStack.push(entry->childNode);
+        }
+    }
+}
