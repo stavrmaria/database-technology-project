@@ -5,6 +5,7 @@ Node::Node() {
     this->entries.clear();
     this->parent = nullptr;
     this->isLeaf = false;
+    this->level = 0;
 }
 
 // Node constructor with no entries
@@ -12,12 +13,14 @@ Node::Node(bool isLeaf) {
     this->entries.clear();
     this->parent = nullptr;
     this->isLeaf = isLeaf;
+    this->level = 0;
 }
 
 // Node constructor based on a vector of entries (leaf/non-leaf)
 Node::Node(vector<Entry*> entries) {
     this->entries = entries;
     this->parent = nullptr;
+    this->level = 0;
     if (entries.at(0)->childNode != nullptr)
         this->isLeaf = false;
     else
@@ -128,4 +131,44 @@ void Node::removeChild(Node *child) {
             return;
         }
     }
+}
+
+// Find the entry in the current node whose rectangle needs least overlap enlargement
+Entry* Node::minOverlapEntry(const Entry* newEntry, double* enlargement) const {
+    double minOverlapEnlargement = numeric_limits<double>::infinity();
+    Entry* entryToChoose = entries.at(0);
+
+    for (auto entry : entries) {
+        BoundingBox originalEntryBB = *(entry->boundingBox);
+        BoundingBox updatedEntryBB = *(entry->boundingBox);
+        updatedEntryBB.includeBox(*(newEntry->boundingBox));
+        double overlapEnlargement = originalEntryBB.calculateOverlap(updatedEntryBB);
+
+        if (overlapEnlargement < minOverlapEnlargement) {
+            minOverlapEnlargement = overlapEnlargement;
+            entryToChoose = entry;
+        }
+    }
+
+    *enlargement = minOverlapEnlargement;
+    return entryToChoose;
+}
+
+// Find the entry in the current node whose rectangle needs least overlap enlargement
+Entry* Node::minEnlargedAreaEntry(const Entry *newEntry, double *enlargment) const {
+    double minEnlargement = numeric_limits<double>::infinity();
+    Entry* entryToChoose = entries.at(0);
+    for (auto entry : entries) {
+        BoundingBox originalEntryBB = *(entry->boundingBox);
+        BoundingBox updatedEntryBB = *(entry->boundingBox);
+        updatedEntryBB.includeBox(*(newEntry->boundingBox));
+        double areaEnlargement = updatedEntryBB.getArea() - originalEntryBB.getArea();
+        if (areaEnlargement < minEnlargement) {
+            minEnlargement = areaEnlargement;
+            entryToChoose = entry;
+        }
+    }
+
+    *enlargment = minEnlargement;
+    return entryToChoose;
 }

@@ -37,6 +37,8 @@ class Node {
         void clearBoudingBox();
         void deleteEntry(Entry*);
         void removeChild(Node *);
+        Entry* minOverlapEntry(const Entry*, double*) const;
+        Entry *minEnlargedAreaEntry(const Entry*, double*) const;
 };
 
 // Struct that represents each entry of a given node

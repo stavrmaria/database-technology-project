@@ -22,6 +22,8 @@ public:
     void includeBox(const BoundingBox&);
     double calculateOverlap(const BoundingBox&) const;
     double calculateMargin() const;
+    Point getCenter() const;
+    bool compareBoundingBox(const BoundingBox&, int);
 };
 
 #endif

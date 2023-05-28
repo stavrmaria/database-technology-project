@@ -31,7 +31,7 @@ double BoundingBox::getN() const {
     return this->n;
 }
 
-// get the area of the bounding box
+// Calculate the area of the bounding box
 double BoundingBox::getArea() const {
     double area = 1;
     for (int i = 0; i < this->n; i++) {
@@ -109,7 +109,7 @@ double BoundingBox::calculateOverlap(const BoundingBox& other) const {
 
     // Otherwise calculate the overlap
     for (int i = 0; i < this->n; i++) {
-        double currentLength = min(this->maxCoordinates.at(i), other.maxCoordinates.at(i)) - max(this->minCoordinates.at(i), other.minCoordinates.at(i));
+        double currentLength = abs(min(this->maxCoordinates.at(i), other.maxCoordinates.at(i)) - max(this->minCoordinates.at(i), other.minCoordinates.at(i)));
         overlap *= currentLength;
     }
 
@@ -126,4 +126,25 @@ double BoundingBox::calculateMargin() const {
     }
 
     return margin;
+}
+
+// Return the center point of the bounding box
+Point BoundingBox::getCenter() const {
+    Point centerPoint;
+    for (int i = 0; i < this->n; i++) {
+        double middle = (this->maxCoordinates.at(i) - this->minCoordinates.at(i)) / 2;
+        centerPoint.addDimension(middle);
+    }
+
+    return centerPoint;
+}
+
+// Compare the lower and upper values of thw two bounding boxes in the Nth dimension
+bool BoundingBox::compareBoundingBox(const BoundingBox& boundingBox, int n) {
+    if (this->minCoordinates.at(n) < boundingBox.minCoordinates.at(n)) {
+        return true;
+    } else if (this->minCoordinates.at(n) == boundingBox.minCoordinates.at(n)) {
+        return this->maxCoordinates.at(n) < boundingBox.maxCoordinates.at(n);
+    }
+    return false;
 }
