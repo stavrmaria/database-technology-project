@@ -16,6 +16,14 @@ Point::Point(unsigned long id, string name, vector<double> coordinates) {
     this->coordinates = coordinates;
 }
 
+// point constructor based on it's attributes
+Point::Point(vector<double> coordinates) {
+    this->n = this->coordinates.size();
+    this->id = 0;
+    this->name = "";
+    this->coordinates = coordinates;
+}
+
 // Copy constructor
 Point::Point(const Point &point) {
     this->n = point.n;

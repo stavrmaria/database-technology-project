@@ -42,6 +42,7 @@ class newRStarTree {
         unsigned long getNodesCount() const;
         void insertData(Point&, unsigned int&, unsigned int&);
         void display();
+
 };
 
 #endif

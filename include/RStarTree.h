@@ -14,6 +14,8 @@
 
 using namespace std;
 
+struct comparePairs;
+
 class RStarTree {
     private:
         Node *root;
@@ -45,6 +47,7 @@ class RStarTree {
         int saveIndex(const string&);
         int saveData(const string&);
         vector<ID> rangeQuery(BoundingBox&);
+        vector<ID> kNearestNeighbors(Point&, int);
 };
 
 #endif
