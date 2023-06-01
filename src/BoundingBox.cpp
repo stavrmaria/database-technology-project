@@ -148,3 +148,10 @@ bool BoundingBox::compareBoundingBox(const BoundingBox& boundingBox, int n) {
     }
     return false;
 }
+
+void BoundingBox::reset() {
+    for (int i = 0; i < n; i++) {
+        this->minCoordinates.push_back(numeric_limits<double>::infinity());
+        this->maxCoordinates.push_back(0);
+    }
+}

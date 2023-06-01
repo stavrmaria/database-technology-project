@@ -16,14 +16,18 @@ class Node {
     private:
         bool isLeaf;
         int level;
+        int dimensions;
         Node *parent;
         vector<Entry*> entries;
+        BoundingBox *boundingBox;
     public:
         Node();
-        Node(bool);
-        Node(vector<Entry*>);
+        Node(int, bool);
+        Node(int, vector<Entry*>);
         Node *getParent();
+        BoundingBox *getBoundingBox();
         void setParent(Node*);
+        void includeBoundingBox(BoundingBox*);
         bool isLeafNode() const;
         Entry *findEntry(int&);
         Entry *findEntry(Node*);

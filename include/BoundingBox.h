@@ -24,6 +24,7 @@ public:
     double calculateMargin() const;
     Point getCenter() const;
     bool compareBoundingBox(const BoundingBox&, int);
+    void reset();
 };
 
 #endif

@@ -9,15 +9,17 @@ Node::Node() {
 }
 
 // Node constructor with no entries
-Node::Node(bool isLeaf) {
+Node::Node(int dimensions, bool isLeaf) {
     this->entries.clear();
     this->parent = nullptr;
     this->isLeaf = isLeaf;
     this->level = 0;
+    this->dimensions = dimensions;
+    this->boundingBox = new BoundingBox(dimensions);
 }
 
 // Node constructor based on a vector of entries (leaf/non-leaf)
-Node::Node(vector<Entry*> entries) {
+Node::Node(int dimensions, vector<Entry*> entries) {
     this->entries = entries;
     this->parent = nullptr;
     this->level = 0;
@@ -25,11 +27,19 @@ Node::Node(vector<Entry*> entries) {
         this->isLeaf = false;
     else
         this->isLeaf = true;
+    this->dimensions = dimensions;
+    this->boundingBox = new BoundingBox(dimensions);
+    for (const auto &entry : entries)
+        this->boundingBox->includeBox(*(entry->boundingBox));
 }
 
 // Get the parent of the node
 Node *Node::getParent() {
     return this->parent;
+}
+
+BoundingBox *Node::getBoundingBox() {
+    return this->boundingBox;
 }
 
 // Check whether or not the node is leaf 
@@ -51,6 +61,10 @@ Entry *Node::findEntry(Node *target) {
         if (entry->childNode == target)
             return entry;
     }
+}
+
+void Node::includeBoundingBox(BoundingBox *boundingBox) {
+    this->boundingBox->includeBox(*boundingBox);
 }
 
 // Return the entries of the node
@@ -81,11 +95,13 @@ int Node::entriesSize() {
 // Insert a new entry in the node
 void Node::insertEntry(Entry *newEntry) {
     this->entries.push_back(newEntry);
+    this->boundingBox->includeBox(*(newEntry->boundingBox));
 }
 
 // Clear all the entries from the node
 void Node::clearEntries() {
     this->entries.clear();
+    this->boundingBox->reset();
 }
 
 void Node::clearBoudingBox(){

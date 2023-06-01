@@ -3,7 +3,7 @@
 #include <queue>
 
 // Implementation of range query
-vector<ID> RStarTree::rangeQuery(BoundingBox &boundingBox) {
+vector<ID> newRStarTree::rangeQuery(BoundingBox &boundingBox) {
     vector<ID> results = {};
 
     if (this->root == nullptr) {
@@ -36,33 +36,6 @@ vector<ID> RStarTree::rangeQuery(BoundingBox &boundingBox) {
     return results;
 }
 
-// Display the R* Tree using DFS traversal
-void RStarTree::display() {
-    if (this->root == nullptr) {
-        return;
-    }
-
-    stack<Node*> nodeStack;
-    int p = 8;
-    nodeStack.push(this->root);
-    while (!nodeStack.empty()) {
-        Node *current = nodeStack.top();
-        nodeStack.pop();
-        if (current->isLeafNode() && current->getEntries().size() > 0) {
-            cout << "[";
-            for (auto entry : current->getEntries()) {
-                cout << "(" << findObjectById(*(entry->id), p) << ") ";
-            }
-            cout << "]" << endl;
-        }
-        for (auto entry : current->getEntries()) {
-            if (entry->childNode == nullptr)
-                continue;
-            nodeStack.push(entry->childNode);
-        }
-    }
-}
-
 struct comparePairs {
     bool operator()(const pair<double, ID> &a, const pair<double, ID> &b) {
         return a.first > b.first;
@@ -70,7 +43,7 @@ struct comparePairs {
 };
 
 // Implementation of k-nearest neighbors query
-vector<ID> RStarTree::kNearestNeighbors(Point& queryPoint, int k) {
+vector<ID> newRStarTree::kNearestNeighbors(Point& queryPoint, int k) {
     vector<ID> kNeighbors = {};
 
     if (this->root == nullptr) {

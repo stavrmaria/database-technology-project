@@ -13,7 +13,7 @@ using namespace std;
 #include "RStarTree.h"
 #include "constants.h"
 
-#include "newRStarTree.h"
+#include "RStarTree.h"
 
 int main() {
     // Set the points attributes
@@ -21,8 +21,7 @@ int main() {
     int maxObjectSize = dimensions * sizeof(double) + 100 * sizeof(char);
     int maxEntries = BLOCK_SIZE / maxObjectSize;
     maxEntries = 3;
-    RStarTree *rStarTree = new RStarTree(maxEntries, dimensions, maxObjectSize);
-    newRStarTree *rStar = new newRStarTree(maxEntries, dimensions, maxObjectSize);
+    newRStarTree *rStarTree = new newRStarTree(maxEntries, dimensions, maxObjectSize);
     unsigned int blockCount = 0;
     unsigned int pointCount = 0;
     unsigned int slot = 0;
@@ -76,15 +75,7 @@ int main() {
 
         // Write point into datafile and insert it to the tree
         dataFile << record << endl;
-        // rStarTree->insert(point, blockCount, slot);
-        
-        if (point.getID() <= 10){
-            rStar->insertData(point, blockCount, slot);
-            rStarTree->insert(point, blockCount, slot);
-            cout << "========== R* ==========\n";
-            rStar->display();
-            cout << "========================\n";
-        }
+        rStarTree->insertData(point, blockCount, slot);
         slot++;
         currentBlockSize += maxObjectSize;
     }
@@ -93,10 +84,8 @@ int main() {
     if (rStarTree->saveIndex(INDEX_FILE) == 1)
         return 1;
     
-    cout << "========== R ==========\n";
+    cout << "========== R* ==========\n";
     rStarTree->display();
-    // cout << "========== R* ==========\n";
-    // rStar->display();
     
     indexFile.close();
     dataFile.close();

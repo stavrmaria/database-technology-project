@@ -8,7 +8,7 @@
 using namespace std;
 
 // Save R* Tree into the indexfile
-int RStarTree::saveIndex(const string &indexFileName) {
+int newRStarTree::saveIndex(const string &indexFileName) {
     fstream indexfile;
     indexfile.open(indexFileName, ios::out | ios::binary);
     
@@ -26,7 +26,7 @@ int RStarTree::saveIndex(const string &indexFileName) {
 }
 
 // Save the leaves of the R* Tree by traversing the nodes with the DFS algorithm
-void RStarTree::saveIndex(fstream& indexFile, Node *currentNode) {
+void newRStarTree::saveIndex(fstream& indexFile, Node *currentNode) {
     if (currentNode == nullptr) {
         return;
     }
@@ -49,7 +49,7 @@ void RStarTree::saveIndex(fstream& indexFile, Node *currentNode) {
 }
 
 
-int RStarTree::saveData(const string &dataFileName) {
+int newRStarTree::saveData(const string &dataFileName) {
     fstream dataFile;
     dataFile.open(dataFileName, ios::out | ios::binary);
     
@@ -66,7 +66,7 @@ int RStarTree::saveData(const string &dataFileName) {
     return 0;
 }
 
-void RStarTree::saveData(fstream& dataFile, Node *currentNode) {
+void newRStarTree::saveData(fstream& dataFile, Node *currentNode) {
     if (currentNode == nullptr) {
         return;
     }
