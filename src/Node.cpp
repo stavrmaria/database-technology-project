@@ -43,12 +43,12 @@ Entry *Node::findEntry(int &index) {
 }
 
 // Find an entry in the node based on a node
-Entry *Node::findEntry(Node *node) {
+Entry *Node::findEntry(Node *target) {
     if (this == nullptr)
         return nullptr;
     
     for (auto &entry : this->entries) {
-        if (entry->childNode == node)
+        if (entry->childNode == target)
             return entry;
     }
 }
@@ -79,8 +79,8 @@ int Node::entriesSize() {
 }
 
 // Insert a new entry in the node
-void Node::insertEntry(Entry* entry) {
-    this->entries.push_back(entry);
+void Node::insertEntry(Entry *newEntry) {
+    this->entries.push_back(newEntry);
 }
 
 // Clear all the entries from the node

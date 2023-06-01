@@ -23,18 +23,19 @@ class newRStarTree {
         int dimensions;
         int maxObjectSize;
         unsigned long nodesCount;
-        unordered_map<int, bool> levelCallMap;
+        vector<int> levelCallMap;
 
         Node *chooseSubtree(Entry*, Node*);
-        void overFlowTreatment(Node*, Node*);
+        bool overFlowTreatment(Node*, Node*);
         pair<Node*, Node*> adjustTree(Node*, Node*);
         bool isFirstCallOfLevel(int);
-        void reInsert(Node*, Node*);
+        void reInsert(Node*);
         void splitNode(Node*, Node*);
         int chooseSplitAxis(Node*);
         int chooseSplitIndex(Node*,int&);
         void insert(Entry*, Node*);
         void destroyNode(Node*);
+        pair<Node*, Node*> adjustRoot(Node*, Node*);
     public:
         newRStarTree(int, int, int);
         ~newRStarTree();
@@ -42,7 +43,6 @@ class newRStarTree {
         unsigned long getNodesCount() const;
         void insertData(Point&, unsigned int&, unsigned int&);
         void display();
-
 };
 
 #endif

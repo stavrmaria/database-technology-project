@@ -79,10 +79,12 @@ int main() {
         // rStarTree->insert(point, blockCount, slot);
         
         if (point.getID() <= 10){
-            // rStar->insertData(point, blockCount, slot);
+            rStar->insertData(point, blockCount, slot);
             rStarTree->insert(point, blockCount, slot);
+            cout << "========== R* ==========\n";
+            rStar->display();
+            cout << "========================\n";
         }
-        
         slot++;
         currentBlockSize += maxObjectSize;
     }
@@ -90,17 +92,6 @@ int main() {
     // Save the R* tree index to the index file and the data file
     if (rStarTree->saveIndex(INDEX_FILE) == 1)
         return 1;
-
-    BoundingBox bb(dimensions, vector<double>{4.5, 2}, vector<double> {8, 5});
-    vector<ID> res = rStarTree->rangeQuery(bb);
-    for (int i = 0; i < res.size(); i++)
-        cout << findObjectById(res.at(i), pointsPerBlock).getID() << endl;
-    
-    cout<<"-----------------\n";
-    Point kpoint(vector<double> {2, 4});
-    vector<ID> kres = rStarTree->kNearestNeighbors(kpoint, 2);
-    for (int i = 0; i < kres.size(); i++)
-        cout << findObjectById(kres.at(i), pointsPerBlock).getID() << endl;
     
     cout << "========== R ==========\n";
     rStarTree->display();

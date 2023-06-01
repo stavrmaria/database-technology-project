@@ -8,7 +8,7 @@ newRStarTree::newRStarTree(int maxEntries, int dimensions, int maxObjectSize) {
     this->minEntries = (int)(maxEntries / 2);
     this->nodesCount = 1;
     this->maxObjectSize = maxObjectSize;
-    this->levelCallMap.insert({0, false});
+    this->levelCallMap = {};
 }
 
 // Recursively delete the R* Tree
@@ -62,55 +62,33 @@ void newRStarTree::insertData(Point &point, unsigned int &blockID, unsigned int 
 }
 
 void newRStarTree::insert(Entry *entry, Node *currentNode) {
-    cout << "Inserting ..." << endl;
+    cout << "Inserting ["<< entry->id->blockID << "," << entry->id->slot << "] ..." << endl;
     Node *newNode = nullptr;
+    bool invokedSplit = false;
     Node *subtreeNode = chooseSubtree(entry, currentNode);
     subtreeNode->insertEntry(entry);
 
     // There is not available space to place the point
     if (subtreeNode->entriesSize() > this->maxEntries) {
         newNode = new Node(true);
-        cout << "new node lvl(insert): " << subtreeNode->getLevel() << endl;
         newNode->setLevel(subtreeNode->getLevel());
-        overFlowTreatment(subtreeNode, newNode);
+        invokedSplit = overFlowTreatment(subtreeNode, newNode);
+        if (!invokedSplit)
+            newNode = nullptr;
     }
 
     pair<Node*, Node*> adjustedNodes = adjustTree(subtreeNode, newNode);
-    subtreeNode = adjustedNodes.first;
-    newNode = adjustedNodes.second;
-
-    // The node split propagation caused the root to split, create a new root
-    if (subtreeNode->getParent() == nullptr && newNode != nullptr) {
-        cout << "\tNew root" << endl;
-        Node *parentNode = new Node(false);
-        parentNode->setLevel(0);
-
-        Entry *firstEntry = new Entry();
-        firstEntry->childNode = subtreeNode;
-        subtreeNode->setParent(parentNode);
-        subtreeNode->setLevel(1);
-        firstEntry->boundingBox = new BoundingBox(this->dimensions);
-        for (auto entry : subtreeNode->getEntries())
-            firstEntry->boundingBox->includeBox(*entry->boundingBox);
-
-        Entry *secondEntry = new Entry();
-        secondEntry->childNode = newNode;
-        newNode->setParent(parentNode);
-        newNode->setLevel(1);
-        secondEntry->boundingBox = new BoundingBox(this->dimensions);
-        for (auto entry : newNode->getEntries())
-            secondEntry->boundingBox->includeBox(*entry->boundingBox);
-        
-        parentNode->insertEntry(firstEntry);
-        parentNode->insertEntry(secondEntry);
-        currentNode = parentNode;
-        this->nodesCount++;
+    // Split was performed, propagate OverflowTreatment upwards if necessary
+    while (invokedSplit && subtreeNode->getParent() != nullptr && subtreeNode->getParent()->entriesSize() > this->maxEntries) {
+        cout << "upwards\n";
+        Node *parentNode = subtreeNode->getParent();
+        newNode = new Node(false);
+        invokedSplit = overFlowTreatment(parentNode, newNode);
+        adjustedNodes = adjustTree(parentNode, newNode);
+        subtreeNode = adjustedNodes.first;
     }
-
-    cout << "Sucessfull insertion." << endl;
-    cout << "------------------------------------------" << endl;
-
-    this->root = currentNode;
+    cout<<"----------------------------------------\n";
+    this->root = adjustedNodes.first;
     this->nodesCount++;
 }
 
@@ -162,46 +140,33 @@ Node* newRStarTree::chooseSubtree(Entry* newEntry, Node* node) {
         
         currentNode = entryToChoose->childNode;
     }
-    
-    cout << "\tChoose SubTree: ";
-    for (int i = 0; i < currentNode->getEntries().size(); i++)
-        cout << currentNode->getEntries().at(i)->id->blockID << " " << currentNode->getEntries().at(i)->id->slot << ", ";
-    cout << endl;
 
     return currentNode;
 }
 
-void newRStarTree::overFlowTreatment(Node* currentNode, Node *newNode) {
-    cout << "\tOverflow treatment" << endl;
-    for (auto const &pair: levelCallMap) {
-        std::cout << "{" << pair.first << ": " << pair.second << "} ";
+bool newRStarTree::overFlowTreatment(Node* currentNode, Node *newNode) {
+    cout<< "Overflow treatment\n";
+    if (currentNode->getLevel() != 0 && isFirstCallOfLevel(currentNode->getLevel())) {
+        reInsert(currentNode);
+        return false;
     }
-    cout << "\n";
-
-    bool isFirstCall = isFirstCallOfLevel(currentNode->getLevel());
-    cout << "\t\tisFirstCallOfLevel : " << isFirstCall << endl;
-
-    if (currentNode->getLevel() != 0 && isFirstCall)
-        reInsert(currentNode, newNode);
-    else
-        splitNode(currentNode, newNode);
+    
+    splitNode(currentNode, newNode);
+    return true;
 }
 
 // Check if the overflow treatment has been called before in the node's level
 bool newRStarTree::isFirstCallOfLevel(int level) {
-    auto it = this->levelCallMap.find(level);
-    if (it == this->levelCallMap.end()) {
-        this->levelCallMap[level] = false;
-    } else {
-        this->levelCallMap[level] = true;
-    }
-
-    return this->levelCallMap[level];
+    auto it = find(this->levelCallMap.begin(), this->levelCallMap.end(), level);
+    bool found = (it != this->levelCallMap.end());
+    if (!found)
+        this->levelCallMap.push_back(level);
+    
+    return !found;
 }
 
-void newRStarTree::reInsert(Node *currentNode, Node *newNode) {
-    cout << "\tResinsert" << endl;
-
+void newRStarTree::reInsert(Node *currentNode) {
+    cout << "Reinsert\n";
     // Calculate for each entry the distance between the entry itself and the current node's MBB
     vector<Entry*> entries = currentNode->getEntries();
     vector<double> distances;
@@ -216,7 +181,7 @@ void newRStarTree::reInsert(Node *currentNode, Node *newNode) {
         distances.push_back(distance);
     }
 
-    // Sort the entries based on the decreasing order of the distances 
+    // Sort the entries based on the decreasing order of the distances
     sort(entries.begin(), entries.end(), [&](const Entry* x, const Entry* y) {
         int indexX = distance(entries.begin(), find(entries.begin(), entries.end(), x));
         int indexY = distance(entries.begin(), find(entries.begin(), entries.end(), y));
@@ -225,32 +190,27 @@ void newRStarTree::reInsert(Node *currentNode, Node *newNode) {
 
     // Remove the first p entries from the current node
     int removedEntriesNum = int(REINSERTION_PER * (this->maxEntries + 1));
+    vector<Entry*> removedEntries;
+    copy(entries.begin(), entries.begin() + removedEntriesNum, back_inserter(removedEntries));
+    entries.erase(entries.begin(), entries.begin() + removedEntriesNum);
     currentNode->clearEntries();
-    for (int i = removedEntriesNum; i < entries.size(); i++)
-        currentNode->insertEntry(entries.at(i));
-
+    
+    for (const auto &entry: entries)
+        currentNode->insertEntry(entry);
+    
     // Reinsert the removed entries
-    for (int i = 0; i < removedEntriesNum; i++)
-        insert(entries.at(i),this->root);
+    for (const auto &removedEntry: removedEntries)
+        insert(removedEntry, this->root);
 }
 
 void newRStarTree::splitNode(Node *currentNode, Node *newNode) {
-    cout << "\tSplit" << endl;
-
+    cout << "Split\n";
     int selectedAxis = chooseSplitAxis(currentNode);
-    cout << "\t\t\tselected axis: " << selectedAxis << endl;
-
     int selectedSplitIndex = chooseSplitIndex(currentNode, selectedAxis);
-    cout << "\t\t\tselected split index: " << selectedSplitIndex << endl;
     vector<Entry*> sortedEntries = currentNode->getEntries();
     sort(sortedEntries.begin(), sortedEntries.end(), [&selectedAxis](Entry *a, Entry *b) {
         return a->boundingBox->compareBoundingBox(*(b->boundingBox), selectedAxis);
     });
-
-    for (int i = 0; i < sortedEntries.size(); i++)
-        cout << currentNode->getEntries().at(i)->id->blockID << " " << currentNode->getEntries().at(i)->id->slot << ", ";
-    cout << endl;
-
     currentNode->clearEntries();
     newNode->clearEntries();
     for (int i = 0; i < this->minEntries - 1 + selectedSplitIndex; i++)
@@ -333,8 +293,8 @@ int newRStarTree::chooseSplitIndex(Node *currentNode,int &selectedAxis) {
 }
 
 pair<Node*, Node*> newRStarTree::adjustTree(Node *currentNode, Node *newNode) {
+    cout<<"Adjust\n";
     Entry *newEntry = new Entry();
-
     // While the current node is the not root move upwards
     while (currentNode->getParent() != nullptr) {
         // Adjust the MBB of the parent entry so that it tightly encloses all entry rectangles in the current node
@@ -355,9 +315,10 @@ pair<Node*, Node*> newRStarTree::adjustTree(Node *currentNode, Node *newNode) {
             for (auto entry : newNode->getEntries()) {
                 newEntry->boundingBox->includeBox(*entry->boundingBox);
             }
-            parentNode->insertEntry(newEntry);
-            
+
+            parentNode->insertEntry(newEntry);            
             if (parentNode->entriesSize() > this->maxEntries) {
+                cout << "\t2nd parent needed\n";
                 Node *secondParentNode = new Node(false);
                 parentNode->setLevel(parentNode->getLevel());
                 splitNode(parentNode, secondParentNode);
@@ -368,6 +329,40 @@ pair<Node*, Node*> newRStarTree::adjustTree(Node *currentNode, Node *newNode) {
         }
 
         currentNode = parentNode;
+    }
+
+    pair<Node*, Node*> adjusted = adjustRoot(currentNode, newNode);
+    return adjusted;
+}
+
+// Adjust the root of the tree
+pair<Node*, Node*> newRStarTree::adjustRoot(Node *currentNode, Node *newNode) {
+    // The node split propagation caused the root to split, create a new root
+    if (currentNode->getParent() == nullptr && newNode != nullptr) {
+        cout<<"\tNew root!\n";
+        Node *parentNode = new Node(false);
+        parentNode->setLevel(0);
+
+        Entry *firstEntry = new Entry();
+        firstEntry->childNode = currentNode;
+        currentNode->setParent(parentNode);
+        currentNode->setLevel(1);
+        firstEntry->boundingBox = new BoundingBox(this->dimensions);
+        for (auto entry : currentNode->getEntries())
+            firstEntry->boundingBox->includeBox(*entry->boundingBox);
+
+        Entry *secondEntry = new Entry();
+        secondEntry->childNode = newNode;
+        newNode->setParent(parentNode);
+        newNode->setLevel(1);
+        secondEntry->boundingBox = new BoundingBox(this->dimensions);
+        for (auto entry : newNode->getEntries())
+            secondEntry->boundingBox->includeBox(*entry->boundingBox);
+        
+        parentNode->insertEntry(firstEntry);
+        parentNode->insertEntry(secondEntry);
+        currentNode = parentNode;
+        this->nodesCount++;
     }
 
     return make_pair(currentNode, newNode);
@@ -391,6 +386,8 @@ void newRStarTree::display() {
                 cout << "(" << findObjectById(*(entry->id), p) << ") ";
             }
             cout << "]" << endl;
+        } else {
+            cout << "entries: " << current->entriesSize()  << "\tlevel: " << current->getLevel() << endl;
         }
         for (auto entry : current->getEntries()) {
             if (entry->childNode == nullptr)
