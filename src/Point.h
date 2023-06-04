@@ -18,7 +18,8 @@ class Point {
     public:
         Point();
         Point(const Point&);
-        Point(unsigned long, string, vector<double>);
+        Point(int, string, vector<double>);
+        Point(vector<double>);
         int getN() const;
         unsigned long int getID() const;
         string getName() const;

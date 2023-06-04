@@ -9,10 +9,18 @@ Point::Point() {
 }
 
 // point constructor based on it's attributes
-Point::Point(unsigned long id, string name, vector<double> coordinates) {
-    this->n = this->coordinates.size();
+Point::Point(int id, string name, vector<double> coordinates) {
+    this->n = coordinates.size();
     this->id = id;
     this->name = name;
+    this->coordinates = coordinates;
+}
+
+// point constructor based on it's attributes
+Point::Point(vector<double> coordinates) {
+    this->n = coordinates.size();
+    this->id = 0;
+    this->name = "";
     this->coordinates = coordinates;
 }
 

@@ -256,15 +256,15 @@ void  RStarTree::traverse() {
 }
 
 void RStarTree::deletePoint(Point& point) {
-    // Find node containing record
+    // Find node containing record  
     Node* leafNode = chooseLeaf(root, point);
 
+    Entry* entry=leafNode->findEntry(leafNode);
+
     // Stop if the record was not found
-    if (leafNode == nullptr) {
+    if (entry == nullptr) {
         return;
     }
-
-    Entry* entry=leafNode->findEntry(leafNode);
     
     // Delete record
     leafNode->deleteEntry(entry);
@@ -306,7 +306,7 @@ void RStarTree:: condenseTree(Node* leafNode) {
 }
 
 void RStarTree::insertEntry(Entry* entry) {
-    Node* targetNode = chooseLeaf(root, entry);
+    Node* targetNode = chooseLeafEntry(root, entry);
     targetNode->insertEntry(entry);
 
     if (targetNode->entriesSize() > maxEntries) {
@@ -330,7 +330,7 @@ void RStarTree::deleteChild(Node* childNode) {
     delete childNode;
 }
 
-Node  *RStarTree::chooseLeaf(Node* currentNode, Entry* entry){
+Node  *RStarTree::chooseLeafEntry(Node* currentNode, Entry* entry){
         if (currentNode->isLeafNode()) {
         // Check if any entry in the leaf node matches the given entry
         for (Entry* nodeEntry : currentNode->getEntries()) {
@@ -342,7 +342,7 @@ Node  *RStarTree::chooseLeaf(Node* currentNode, Entry* entry){
         // Recursively search in the child nodes
         for (Entry* nodeEntry : currentNode->getEntries()) {
             if (nodeEntry->childNode) {
-                Node* foundNode = chooseLeaf(nodeEntry->childNode, entry);
+                Node* foundNode = chooseLeafEntry(nodeEntry->childNode, entry);
                 if (foundNode) {
                     return foundNode;
                 }
@@ -351,4 +351,32 @@ Node  *RStarTree::chooseLeaf(Node* currentNode, Entry* entry){
     }
 
     return nullptr; // Entry not found
+}
+
+
+// Display the R* Tree using DFS traversal
+void RStarTree::display() {
+    if (this->root == nullptr) {
+        return;
+    }
+
+    stack<Node*> nodeStack;
+    int p = 8;
+    nodeStack.push(this->root);
+    while (!nodeStack.empty()) {
+        Node *current = nodeStack.top();
+        nodeStack.pop();
+        if (current->isLeafNode() && current->getEntries().size() > 0) {
+            cout << "[";
+            for (auto entry : current->getEntries()) {
+                cout << "(" << findObjectById(*(entry->id), p) << ") ";
+            }
+            cout << "]" << endl;
+        }
+        for (auto entry : current->getEntries()) {
+            if (entry->childNode == nullptr)
+                continue;
+            nodeStack.push(entry->childNode);
+        }
+    }
 }

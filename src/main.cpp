@@ -79,13 +79,30 @@ int main(void) {
     }
 
     // Save the R* tree index to the index file and the data file
-    if (rStarTree->saveIndex(INDEX_FILE) == 1)
-        return 1;
+    // if (rStarTree->saveIndex(INDEX_FILE) == 1)
+    //     return 1;
 
     BoundingBox bb(dimensions, vector<double>{4.5, 2}, vector<double> {8, 5});
     vector<ID> res = rStarTree->rangeQuery(bb);
     for (int i = 0; i < res.size(); i++)
         cout << findObjectById(res.at(i), pointsPerBlock).getID() << endl;
+
+    cout<<"-----"<<endl;
+
+    Point queryPoint(vector<double>{1,0});
+    vector<ID> kres = rStarTree->kNearestNeighbors(queryPoint, 3);
+    for (int i = 0; i < kres.size(); i++)
+        cout << findObjectById(kres.at(i), pointsPerBlock).getID() << endl;
+
+    cout<<"-----"<<endl;
+
+    //rStarTree->display(); 
+
+    //cout<<"-----"<<endl;
+    //Point ptodel(vector <double> {4,1});
+    //rStarTree->deletePoint(ptodel);  
+    //rStarTree->display();
+
     
     indexFile.close();
     dataFile.close();

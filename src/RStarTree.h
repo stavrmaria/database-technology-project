@@ -32,7 +32,7 @@ class RStarTree {
         void condenseTree(Node*);
         void insertEntry(Entry*);
         void deleteChild(Node*);
-        Node *chooseLeaf(Node*,Entry*);
+        Node *chooseLeafEntry(Node*,Entry*);
 
         void saveIndex(fstream&, Node*);
         void saveData(fstream&, Node*);
@@ -49,6 +49,8 @@ class RStarTree {
         int saveIndex(const string&);
         int saveData(const string&);
         vector<ID> rangeQuery(BoundingBox&);
+        vector<ID> kNearestNeighbors(Point&, int);
+        void display();
 };
 
 #endif
