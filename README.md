@@ -23,7 +23,7 @@ The R*-tree supports the following functions:
 - [ ] Delete
 - [ ] Skyline queries
 - [ ] Support range queries
-- [ ] Support k-nn queries
+- [X] Support k-nn queries
 
 ### Index (Sample)
 ```
