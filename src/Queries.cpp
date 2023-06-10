@@ -89,3 +89,48 @@ vector<ID> RStarTree::kNearestNeighbors(Point& queryPoint, int k) {
 
     return kNeighbors;
 }
+
+vector<ID> RStarTree::skylineQuery() {
+    vector<ID> skyline;
+
+    if (this->root == nullptr) {
+        return skyline;
+    }
+
+    stack<Node*> nodeStack;
+    nodeStack.push(this->root);
+    while (!nodeStack.empty()) {
+        Node* current = nodeStack.top();
+        nodeStack.pop();
+
+       if (current->isLeafNode()) {
+            for (auto entry : current->getEntries()) {
+                Point entryPoint(entry->boundingBox->getMinCoordinates());
+
+                bool isDominated = false;
+                for (ID id : skyline) {
+                    Point skylinePoint = findObjectById(id, maxObjectSize);
+                    
+                    if (skylinePoint.dominates(entryPoint)) {
+                        isDominated = true;
+                        break;
+                    }
+                }
+
+                if (!isDominated) {
+                    skyline.push_back(*(entry->id));
+                }
+            }
+       }
+
+        // Push child nodes onto the stack
+        for (auto entry : current->getEntries()) {
+            if (entry->childNode == nullptr) {
+                continue;
+            }
+            nodeStack.push(entry->childNode);
+        }
+    }
+
+    return skyline;
+}

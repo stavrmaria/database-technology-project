@@ -96,6 +96,12 @@ int main(void) {
 
     cout<<"-----"<<endl;
 
+    vector<ID> sres = rStarTree->skylineQuery();
+    for(int i = 0; i < sres.size(); i++)
+        cout << findObjectById(sres.at(i), pointsPerBlock).getID() << endl;
+
+    cout<<"-----"<<endl;
+
     //rStarTree->display(); 
 
     //cout<<"-----"<<endl;

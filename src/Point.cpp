@@ -113,3 +113,11 @@ ostream &operator<<(ostream &stream,const Point &point){
     stream << point.toString();
     return stream;
 }
+
+bool Point:: dominates(Point& q) {
+    for (int i = 0; i < n; ++i) {
+        if (this->coordinates[i] > q.coordinates[i])
+            return false;
+    }
+    return true;
+}

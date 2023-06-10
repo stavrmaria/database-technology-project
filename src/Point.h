@@ -31,6 +31,7 @@ class Point {
         void setDimension(int, double);
         void addDimension(double);
         string toString() const;
+        bool dominates(Point&);
         friend ostream &operator<<(ostream&,const Point&);
 };
 

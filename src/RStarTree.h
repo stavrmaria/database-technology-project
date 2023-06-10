@@ -50,6 +50,7 @@ class RStarTree {
         int saveData(const string&);
         vector<ID> rangeQuery(BoundingBox&);
         vector<ID> kNearestNeighbors(Point&, int);
+        vector<ID> skylineQuery();
         void display();
 };
 
