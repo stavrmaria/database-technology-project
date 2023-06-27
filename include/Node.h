@@ -19,17 +19,15 @@ class Node {
         int dimensions;
         Node *parent;
         vector<Entry*> entries;
-        BoundingBox *boundingBox;
     public:
         Node();
         Node(int, bool);
         Node(int, vector<Entry*>);
+        ~Node();
         Node *getParent();
-        BoundingBox *getBoundingBox();
         void setParent(Node*);
-        void includeBoundingBox(BoundingBox*);
         bool isLeafNode() const;
-        Entry *findEntry(int&);
+        int getDimensions() const;
         Entry *findEntry(Node*);
         vector<Entry*> getEntries();
         int entriesSize();
@@ -41,8 +39,9 @@ class Node {
         void clearBoudingBox();
         void deleteEntry(Entry*);
         void removeChild(Node *);
-        Entry* minOverlapEntry(const Entry*, double*) const;
-        Entry *minEnlargedAreaEntry(const Entry*, double*) const;
+        Entry* minOverlapEntry(const Entry*, double&) const;
+        Entry *minEnlargedAreaEntry(const Entry*, double&) const;
+        bool operator==(const Node& other) const;
 };
 
 // Struct that represents each entry of a given node

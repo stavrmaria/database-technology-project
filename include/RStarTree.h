@@ -7,13 +7,14 @@
 
 #include <stack>
 #include <sstream>
-#include <unordered_map>
 #include <iostream>
 #include <vector>
 #include <limits>
-#include <fstream>
+#include <queue>
 
 using namespace std;
+
+void createChildEntry(Node*, Node*);
 
 class newRStarTree {
     private:
@@ -25,24 +26,21 @@ class newRStarTree {
         unsigned long nodesCount;
         vector<int> levelCallMap;
 
-        Node *chooseSubtree(Entry*, Node*);
-        bool overFlowTreatment(Node*, Node*);
-        pair<Node*, Node*> adjustTree(Node*, Node*);
+        Node *chooseSubtree(Entry*, Node*, int);
+        Node *overFlowTreatment(Node*);
+        void adjustTree(Node*);
         bool isFirstCallOfLevel(int);
         void reInsert(Node*);
         void splitNode(Node*, Node*);
-        int chooseSplitAxis(Node*);
-        int chooseSplitIndex(Node*,int&);
-        void insert(Entry*, Node*);
+        int chooseSplitAxis(Node*) const;
+        int chooseSplitIndex(Node*,int&) const;
+        void insert(Entry*, Node*, int);
         void destroyNode(Node*);
-        pair<Node*, Node*> adjustRoot(Node*, Node*);
         void saveIndex(fstream& indexFile, Node *currentNode);
         void saveData(fstream& dataFile, Node *currentNode);
     public:
         newRStarTree(int, int, int);
         ~newRStarTree();
-        Node *getRoot();
-        unsigned long getNodesCount() const;
         void insertData(Point&, unsigned int&, unsigned int&);
         void display();
         vector<ID> rangeQuery(BoundingBox &);

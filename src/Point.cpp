@@ -4,12 +4,12 @@
 Point::Point() {
     this->n = 0;
     this->id = 0;
-    this->name = "-";
+    this->name = "";
     this->coordinates.clear();
 }
 
 // point constructor based on it's attributes
-Point::Point(unsigned long id, string name, vector<double> coordinates) {
+Point::Point(unsigned long long id, string name, vector<double> coordinates) {
     this->n = this->coordinates.size();
     this->id = id;
     this->name = name;
@@ -32,16 +32,20 @@ Point::Point(const Point &point) {
     this->coordinates = point.coordinates;
 }
 
+// Destructor
+Point::~Point() {
+    this->coordinates.clear();
+}
+
 // return the number of dimensions
 int Point::getN() const {
     return this->n;
 }
 
 // return the point ID
-unsigned long int Point::getID() const {
+unsigned long long Point::getID() const {
     return this->id;
 }
-
 
 // return the name of the point
 string Point::getName() const {
@@ -70,7 +74,7 @@ vector<double> Point::getCoordinates() const {
 }
 
 // setter for the point's id
-void Point::setID(unsigned long int id) {
+void Point::setID(unsigned long long id) {
     this->id = id;
 }
 

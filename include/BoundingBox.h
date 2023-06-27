@@ -12,6 +12,7 @@ private:
 public:
     BoundingBox(int);
     BoundingBox(int, vector<double>, vector<double>);
+    ~BoundingBox();
     vector<double> getMinCoordinates() const;
     vector<double> getMaxCoordinates() const;
     double getN() const;

@@ -16,6 +16,12 @@ BoundingBox::BoundingBox(int n, vector<double> minCoordinates, vector<double> ma
     this->maxCoordinates = maxCoordinates;
 }
 
+// destructor
+BoundingBox::~BoundingBox() {
+    this->minCoordinates.clear();
+    this->maxCoordinates.clear();
+}
+
 // minimum coordinates getter
 vector<double> BoundingBox::getMinCoordinates() const {
     return this->minCoordinates;
@@ -74,6 +80,9 @@ double BoundingBox::getUpdatedArea(const BoundingBox &boundingBox) {
         area *= side;
     }
 
+    minCoordinates.clear();
+    maxCoordinates.clear();
+
     return area;
 }
 
@@ -87,7 +96,7 @@ void BoundingBox::includeBox(const BoundingBox &box) {
     }
 }
 
-// This function checks whether or not this bounding box intersects with this one
+// This function checks whether this bounding box intersects with this one
 bool BoundingBox::intersects(const BoundingBox& other) const {
     for (int i = 0; i < this->n; i++) {
         if (this->minCoordinates.at(i) > other.maxCoordinates.at(i))
@@ -101,19 +110,22 @@ bool BoundingBox::intersects(const BoundingBox& other) const {
 
 // Calculate and return the overlap between two bounding boxes
 double BoundingBox::calculateOverlap(const BoundingBox& other) const {
-    double overlap = 1;
-
     // If the bounding boxes do not intersect at all return 0
     if (!this->intersects(other))
         return 0;
 
+    vector<double> newMinCoordinates = {};
+    vector<double> newMaxCoordinates = {};
     // Otherwise calculate the overlap
     for (int i = 0; i < this->n; i++) {
-        double currentLength = abs(min(this->maxCoordinates.at(i), other.maxCoordinates.at(i)) - max(this->minCoordinates.at(i), other.minCoordinates.at(i)));
-        overlap *= currentLength;
+        double minCoordinate = max(this->minCoordinates.at(i), other.minCoordinates.at(i));
+        double maxCoordinate = min(this->maxCoordinates.at(i), other.maxCoordinates.at(i));
+        newMinCoordinates.push_back(minCoordinate);
+        newMaxCoordinates.push_back(maxCoordinate);
     }
 
-    return overlap;
+    BoundingBox intersectionBox(this->n, newMinCoordinates, newMaxCoordinates);
+    return intersectionBox.getArea();
 }
 
 // Calculate and return the margin between two bounding boxes
@@ -141,16 +153,17 @@ Point BoundingBox::getCenter() const {
 
 // Compare the lower and upper values of thw two bounding boxes in the Nth dimension
 bool BoundingBox::compareBoundingBox(const BoundingBox& boundingBox, int n) {
-    if (this->minCoordinates.at(n) < boundingBox.minCoordinates.at(n)) {
+    if (this->minCoordinates.at(n) < boundingBox.minCoordinates.at(n))
         return true;
-    } else if (this->minCoordinates.at(n) == boundingBox.minCoordinates.at(n)) {
+    else if (this->minCoordinates.at(n) == boundingBox.minCoordinates.at(n))
         return this->maxCoordinates.at(n) < boundingBox.maxCoordinates.at(n);
-    }
     return false;
 }
 
 void BoundingBox::reset() {
-    for (int i = 0; i < n; i++) {
+    this->minCoordinates.clear();
+    this->maxCoordinates.clear();
+    for (int i = 0; i < this->n; i++) {
         this->minCoordinates.push_back(numeric_limits<double>::infinity());
         this->maxCoordinates.push_back(0);
     }

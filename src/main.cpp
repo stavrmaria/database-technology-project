@@ -8,19 +8,14 @@
 using namespace std;
 
 #include "Point.h"
-#include "Node.h"
-#include "BoundingBox.h"
 #include "RStarTree.h"
 #include "constants.h"
-
-#include "RStarTree.h"
 
 int main() {
     // Set the points attributes
     int dimensions = 2;
     int maxObjectSize = dimensions * sizeof(double) + 100 * sizeof(char);
-    int maxEntries = BLOCK_SIZE / maxObjectSize;
-    maxEntries = 3;
+    int maxEntries = int(BLOCK_SIZE / maxObjectSize);
     newRStarTree *rStarTree = new newRStarTree(maxEntries, dimensions, maxObjectSize);
     unsigned int blockCount = 0;
     unsigned int pointCount = 0;
@@ -29,15 +24,14 @@ int main() {
     int pointsPerBlock = 0;
     string line;
 
-    // Tranform the map file to a csv file that has
-    // the format: id, lat, lon, ...
+    // Transform the map file to a csv file that has
+    // the format: id, name, lat, lon, ...
     writeToCSV(CSV_FILE, MAP_FILE, attributeNames, pointCount);
 
     // Write the data of the .csv file into blocks
     fstream dataFile(DATA_FILE, ios::out);
     ifstream csvFile(CSV_FILE);
     ofstream indexFile(INDEX_FILE);
-    cout << maxObjectSize << endl;
 
     if (!dataFile.is_open()) {
         cerr << "Error: could not open file " << DATA_FILE << endl;
@@ -62,6 +56,7 @@ int main() {
     dataFile << "dimensions:" << dimensions << endl;
     dataFile << "capacity:" << maxEntries << endl;
     dataFile << "BLOCK" << blockCount << endl;
+
     // Read each line of the file and parse it into a Point structure
     while (getline(csvFile, line)) {
         Point point = parsePoint(line);
@@ -80,13 +75,14 @@ int main() {
         currentBlockSize += maxObjectSize;
     }
 
+    cout << "Insertion completed." << endl;
     // Save the R* tree index to the index file and the data file
     if (rStarTree->saveIndex(INDEX_FILE) == 1)
         return 1;
-    
-    cout << "========== R* ==========\n";
+
+    cout << "Leaves of the R* Tree:" << endl;
     rStarTree->display();
-    
+
     indexFile.close();
     dataFile.close();
     csvFile.close();

@@ -15,7 +15,6 @@ Node::Node(int dimensions, bool isLeaf) {
     this->isLeaf = isLeaf;
     this->level = 0;
     this->dimensions = dimensions;
-    this->boundingBox = new BoundingBox(dimensions);
 }
 
 // Node constructor based on a vector of entries (leaf/non-leaf)
@@ -28,9 +27,12 @@ Node::Node(int dimensions, vector<Entry*> entries) {
     else
         this->isLeaf = true;
     this->dimensions = dimensions;
-    this->boundingBox = new BoundingBox(dimensions);
-    for (const auto &entry : entries)
-        this->boundingBox->includeBox(*(entry->boundingBox));
+}
+
+// Node destructor
+Node::~Node() {
+    entries.clear();
+    delete parent;
 }
 
 // Get the parent of the node
@@ -38,33 +40,22 @@ Node *Node::getParent() {
     return this->parent;
 }
 
-BoundingBox *Node::getBoundingBox() {
-    return this->boundingBox;
-}
-
-// Check whether or not the node is leaf 
+// Check whether the node is leaf
 bool Node::isLeafNode() const {
     return this->isLeaf;
 }
 
-// Find an entry in the node based on index
-Entry *Node::findEntry(int &index) {
-    return this->entries.at(index);
-}
-
 // Find an entry in the node based on a node
-Entry *Node::findEntry(Node *target) {
+Entry* Node::findEntry(Node* target) {
     if (this == nullptr)
         return nullptr;
-    
-    for (auto &entry : this->entries) {
-        if (entry->childNode == target)
+
+    for (auto entry : entries) {
+        if (*(entry->childNode) == *target)
             return entry;
     }
-}
 
-void Node::includeBoundingBox(BoundingBox *boundingBox) {
-    this->boundingBox->includeBox(*boundingBox);
+    return nullptr;
 }
 
 // Return the entries of the node
@@ -77,9 +68,17 @@ int Node::getLevel() const {
     return this->level;
 }
 
+int Node::getDimensions() const {
+    return this->dimensions;
+}
+
 // Set the level of the node
 void Node::setLevel(int level) {
     this->level = level;
+    if (level == 0)
+        this->isLeaf = true;
+    else
+        this->isLeaf = false;
 }
 
 // Set the parent of the node
@@ -95,19 +94,17 @@ int Node::entriesSize() {
 // Insert a new entry in the node
 void Node::insertEntry(Entry *newEntry) {
     this->entries.push_back(newEntry);
-    this->boundingBox->includeBox(*(newEntry->boundingBox));
 }
 
 // Clear all the entries from the node
 void Node::clearEntries() {
     this->entries.clear();
-    this->boundingBox->reset();
 }
 
 void Node::clearBoudingBox(){
     for(auto entry: entries){
         delete entry->boundingBox;
-        entry->boundingBox=nullptr;
+        entry->boundingBox = nullptr;
     }
 }
 
@@ -150,30 +147,27 @@ void Node::removeChild(Node *child) {
 }
 
 // Find the entry in the current node whose rectangle needs least overlap enlargement
-Entry* Node::minOverlapEntry(const Entry* newEntry, double* enlargement) const {
-    double minOverlapEnlargement = numeric_limits<double>::infinity();
+Entry* Node::minOverlapEntry(const Entry* newEntry, double& enlargement) const {
     Entry* entryToChoose = entries.at(0);
+    double minOverlapEnlargement = entryToChoose->boundingBox->calculateOverlap(*(newEntry->boundingBox));
 
     for (auto entry : entries) {
-        BoundingBox originalEntryBB = *(entry->boundingBox);
-        BoundingBox updatedEntryBB = *(entry->boundingBox);
-        updatedEntryBB.includeBox(*(newEntry->boundingBox));
-        double overlapEnlargement = originalEntryBB.calculateOverlap(updatedEntryBB);
-
+        double overlapEnlargement = entry->boundingBox->calculateOverlap(*(newEntry->boundingBox));
         if (overlapEnlargement < minOverlapEnlargement) {
             minOverlapEnlargement = overlapEnlargement;
             entryToChoose = entry;
         }
     }
 
-    *enlargement = minOverlapEnlargement;
+    enlargement = minOverlapEnlargement;
     return entryToChoose;
 }
 
 // Find the entry in the current node whose rectangle needs least overlap enlargement
-Entry* Node::minEnlargedAreaEntry(const Entry *newEntry, double *enlargment) const {
-    double minEnlargement = numeric_limits<double>::infinity();
+Entry* Node::minEnlargedAreaEntry(const Entry *newEntry, double& enlargment) const {
     Entry* entryToChoose = entries.at(0);
+    double minEnlargement = numeric_limits<double>::infinity();
+
     for (auto entry : entries) {
         BoundingBox originalEntryBB = *(entry->boundingBox);
         BoundingBox updatedEntryBB = *(entry->boundingBox);
@@ -185,6 +179,10 @@ Entry* Node::minEnlargedAreaEntry(const Entry *newEntry, double *enlargment) con
         }
     }
 
-    *enlargment = minEnlargement;
+    enlargment = minEnlargement;
     return entryToChoose;
+}
+
+bool Node::operator==(const Node &other) const {
+    return other.entries == this->entries && other.parent == this->parent;
 }

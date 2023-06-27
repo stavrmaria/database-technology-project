@@ -21,6 +21,10 @@ The R*-tree supports the following functions:
 - [X] Insert
 - [X] Change entries (save only the coordinates)
 - [ ] Delete
-- [ ] Skyline queries
-- [ ] Support range queries
-- [ ] Support k-nn queries
+- [ ] Bulk loading
+- [x] Support range queries
+- [x] Support k-nn queries
+- [x] Support skyline queries
+
+### Test file visualization (14 points)
+![Test file visualization](visualization.png)
