@@ -59,11 +59,8 @@ int main() {
     dataFile << "BLOCK" << blockCount << endl;
 
     // Read each line of the file and parse it into a Point structure
-    int count = 0;
-    int maxcount = 8000;
-    cout << "Points: " << maxcount << endl;
     auto startTime = chrono::high_resolution_clock::now();
-    while (getline(csvFile, line) && count++ < maxcount) {
+    while (getline(csvFile, line)) {
         Point point = parsePoint(line);
         string record = point.toString();
 
