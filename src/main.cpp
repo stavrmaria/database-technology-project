@@ -12,6 +12,9 @@ using namespace std;
 #include "RStarTree.h"
 #include "constants.h"
 
+string doubleToBinaryString(double);
+string zOrderValue(vector<double>);
+
 int main() {
     // Set the points attributes
     int dimensions = 2;
