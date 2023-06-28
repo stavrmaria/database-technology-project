@@ -4,6 +4,7 @@
 #include <vector>
 #include <sstream>
 #include <filesystem>
+#include <chrono>
 
 using namespace std;
 
@@ -58,7 +59,11 @@ int main() {
     dataFile << "BLOCK" << blockCount << endl;
 
     // Read each line of the file and parse it into a Point structure
-    while (getline(csvFile, line)) {
+    int count = 0;
+    int maxcount = 8000;
+    cout << "Points: " << maxcount << endl;
+    auto startTime = chrono::high_resolution_clock::now();
+    while (getline(csvFile, line) && count++ < maxcount) {
         Point point = parsePoint(line);
         string record = point.toString();
 
@@ -74,14 +79,17 @@ int main() {
         slot++;
         currentBlockSize += maxObjectSize;
     }
+    auto endTime = chrono::high_resolution_clock::now();
+    chrono::duration<double, std::micro> duration = endTime - startTime;
 
     cout << "Insertion completed." << endl;
+    cout << "Execution time: " << duration.count() << " milliseconds" << endl;
+    
     // Save the R* tree index to the index file and the data file
-    if (rStarTree->saveIndex(INDEX_FILE) == 1)
-        return 1;
-
-    cout << "Leaves of the R* Tree:" << endl;
-    rStarTree->display();
+    // if (rStarTree->saveIndex(INDEX_FILE) == 1)
+    //     return 1;
+    // cout << "Leaves of the R* Tree:" << endl;
+    // rStarTree->display();
 
     indexFile.close();
     dataFile.close();
