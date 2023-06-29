@@ -11,4 +11,8 @@
  <node id="8" visible="true" version="6" changeset="115449581" timestamp="2021-12-28T02:37:23Z" user="temp" uid="2230609" lat="3.0" lon="3.0"/>
  <node id="9" visible="true" version="6" changeset="115449581" timestamp="2021-12-28T02:37:23Z" user="temp" uid="2230609" lat="6.0" lon="4.0"/>
  <node id="10" visible="true" version="10" changeset="115449581" timestamp="2021-12-28T02:37:23Z" user="temp" uid="2230609" lat="4.0" lon="2.0"/>
+ <node id="11" visible="true" version="10" changeset="115449581" timestamp="2021-12-28T02:37:23Z" user="temp" uid="2230609" lat="8.0" lon="4.0"/>
+ <node id="12" visible="true" version="10" changeset="115449581" timestamp="2021-12-28T02:37:23Z" user="temp" uid="2230609" lat="4.0" lon="4.0"/>
+ <node id="13" visible="true" version="10" changeset="115449581" timestamp="2021-12-28T02:37:23Z" user="temp" uid="2230609" lat="5.0" lon="5.0"/>
+ <node id="10" visible="true" version="10" changeset="115449581" timestamp="2021-12-28T02:37:23Z" user="temp" uid="2230609" lat="5.0" lon="3.0"/>
 </osm>

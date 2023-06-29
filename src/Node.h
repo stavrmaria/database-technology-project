@@ -15,25 +15,33 @@ struct ID;
 class Node {
     private:
         bool isLeaf;
+        int level;
+        int dimensions;
         Node *parent;
         vector<Entry*> entries;
     public:
         Node();
-        Node(bool);
-        Node(vector<Entry*>);
+        Node(int, bool);
+        Node(int, vector<Entry*>);
+        ~Node();
         Node *getParent();
         void setParent(Node*);
         bool isLeafNode() const;
-        Entry *findEntry(int&);
+        int getDimensions() const;
         Entry *findEntry(Node*);
         vector<Entry*> getEntries();
         int entriesSize();
+        void setLevel(int);
+        int getLevel() const;
         void insertEntry(Entry*);
         void clearEntries();
         void adjustBoundingBoxes();
         void clearBoudingBox();
         void deleteEntry(Entry*);
         void removeChild(Node *);
+        Entry* minOverlapEntry(const Entry*, double&) const;
+        Entry *minEnlargedAreaEntry(const Entry*, double&) const;
+        bool operator==(const Node& other) const;
 };
 
 // Struct that represents each entry of a given node

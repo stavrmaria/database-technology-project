@@ -1,9 +1,10 @@
 #include <queue>
 #include "RStarTree.h"
 #include "Node.h"
+#include <queue>
 
 // Implementation of range query
-vector<ID> RStarTree::rangeQuery(BoundingBox &boundingBox) {
+vector<ID> newRStarTree::rangeQuery(BoundingBox &boundingBox) {
     vector<ID> results = {};
 
     if (this->root == nullptr) {
@@ -38,12 +39,12 @@ vector<ID> RStarTree::rangeQuery(BoundingBox &boundingBox) {
 
 struct comparePairs {
     bool operator()(const pair<double, ID> &a, const pair<double, ID> &b) {
-        return a.first >  b.first;
+        return a.first > b.first;
     }
 };
 
 // Implementation of k-nearest neighbors query
-vector<ID> RStarTree::kNearestNeighbors(Point& queryPoint, int k) {
+vector<ID> newRStarTree::kNearestNeighbors(Point& queryPoint, int k) {
     vector<ID> kNeighbors = {};
 
     if (this->root == nullptr) {
@@ -90,7 +91,7 @@ vector<ID> RStarTree::kNearestNeighbors(Point& queryPoint, int k) {
     return kNeighbors;
 }
 
-vector<ID> RStarTree::skylineQuery() {
+vector<ID> newRStarTree::skylineQuery() {
     vector<ID> skyline;
 
     if (this->root == nullptr) {

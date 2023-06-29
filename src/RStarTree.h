@@ -1,21 +1,22 @@
-#ifndef RStarTree_h
-#define RStarTree_h
+#ifndef newRStarTree_h
+#define newRStarTree_h
 
 #include "Point.h"
 #include "Node.h"
 #include "constants.h"
+
 #include <stack>
 #include <sstream>
-
-
 #include <iostream>
 #include <vector>
 #include <limits>
-#include <fstream>
+#include <queue>
 
 using namespace std;
 
-class RStarTree {
+void createChildEntry(Node*, Node*);
+
+class newRStarTree {
     private:
         Node *root;
         int minEntries;
@@ -23,35 +24,35 @@ class RStarTree {
         int dimensions;
         int maxObjectSize;
         unsigned long nodesCount;
-        Node *chooseLeaf(Node*,Point&);
+        vector<int> levelCallMap;
+
+        Node *chooseSubtree(Entry*, Node*, int);
+        Node *overFlowTreatment(Node*);
+        void adjustTree(Node*);
+        bool isFirstCallOfLevel(int);
+        void reInsert(Node*);
         void splitNode(Node*, Node*);
-        pair<Node*, Node*> adjustTree(Node*, Node*);
-        void pickSeeds(Node*, int&, int&);
-        void pickNext(int&, int&, int&, vector<Entry*>);
-        void traverse(Node*);
-        void condenseTree(Node*);
-        void insertEntry(Entry*);
-        void deleteChild(Node*);
-        Node *chooseLeafEntry(Node*,Entry*);
-
-        void saveIndex(fstream&, Node*);
-        void saveData(fstream&, Node*);
+        int chooseSplitAxis(Node*) const;
+        int chooseSplitIndex(Node*,int&) const;
+        void insert(Entry*, Node*, int);
+        void destroyNode(Node*);
+        void saveIndex(fstream& indexFile, Node *currentNode);
+        void saveData(fstream& dataFile, Node *currentNode);
     public:
-        RStarTree(int, int, int);
-        ~RStarTree();
-        Node *getRoot();
-        unsigned long getNodesCount() const;
-        void insert(Point&, unsigned int&, unsigned int&);
-        void insert(Point&);
-        void traverse();
-        void deletePoint(Point&);
-
-        int saveIndex(const string&);
-        int saveData(const string&);
-        vector<ID> rangeQuery(BoundingBox&);
-        vector<ID> kNearestNeighbors(Point&, int);
-        vector<ID> skylineQuery();
+        newRStarTree(int, int, int);
+        ~newRStarTree();
+        void insertData(Point&, unsigned int&, unsigned int&);
         void display();
+        vector<ID> rangeQuery(BoundingBox &);
+        vector<ID> kNearestNeighbors(Point& queryPoint, int k);
+        vector<ID> skylineQuery();
+        void deletePoint(Point&);
+        Entry* findEntryToDelete(Point& , Node*);
+        void removeEntry(Entry* , Node*);
+        void condenseTree(Node*);
+        void adjustNonLeafNode(Node* , Node*);
+        int saveIndex(const string &indexFileName);
+        int saveData(const string &dataFileName);
 };
 
 #endif

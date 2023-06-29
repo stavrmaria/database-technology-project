@@ -8,7 +8,9 @@ const string DATA_FILE = "datafile.dat";
 const string INDEX_FILE = "indexfile.bin";
 const vector<string> attributeNames = {"id", "name", "lat", "lon"};
 
-#define BLOCK_SIZE 1024
+#define BLOCK_SIZE 32 * 1024
+#define REINSERTION_PER 0.3
+#define ERROR 0.0001
 
 void writeToCSV(const string& csvFileName, const string& dataFileName, const vector<string>& attributeNames, unsigned int &pointCount);
 Point findObjectById(ID id, int &maxObjectSize);

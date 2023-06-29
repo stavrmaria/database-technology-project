@@ -4,22 +4,23 @@
 #include <vector>
 #include <sstream>
 //#include <filesystem>
+#include <chrono>
 
 using namespace std;
 
 #include "Point.h"
-#include "Node.h"
-#include "BoundingBox.h"
 #include "RStarTree.h"
 #include "constants.h"
 
-int main(void) {
+string doubleToBinaryString(double);
+string zOrderValue(vector<double>);
+
+int main() {
     // Set the points attributes
     int dimensions = 2;
     int maxObjectSize = dimensions * sizeof(double) + 100 * sizeof(char);
-    int maxEntries = BLOCK_SIZE / maxObjectSize;
-    maxEntries = 3;
-    RStarTree *rStarTree = new RStarTree(maxEntries, dimensions, maxObjectSize);
+    int maxEntries = int(BLOCK_SIZE / maxObjectSize);
+    newRStarTree *rStarTree = new newRStarTree(maxEntries, dimensions, maxObjectSize);
     unsigned int blockCount = 0;
     unsigned int pointCount = 0;
     unsigned int slot = 0;
@@ -27,15 +28,14 @@ int main(void) {
     int pointsPerBlock = 0;
     string line;
 
-    // Tranform the map file to a csv file that has
-    // the format: id, lat, lon, ...
+    // Transform the map file to a csv file that has
+    // the format: id, name, lat, lon, ...
     writeToCSV(CSV_FILE, MAP_FILE, attributeNames, pointCount);
 
     // Write the data of the .csv file into blocks
     fstream dataFile(DATA_FILE, ios::out);
     ifstream csvFile(CSV_FILE);
     ofstream indexFile(INDEX_FILE);
-    cout << maxObjectSize << endl;
 
     if (!dataFile.is_open()) {
         cerr << "Error: could not open file " << DATA_FILE << endl;
@@ -60,7 +60,9 @@ int main(void) {
     dataFile << "dimensions:" << dimensions << endl;
     dataFile << "capacity:" << maxEntries << endl;
     dataFile << "BLOCK" << blockCount << endl;
+
     // Read each line of the file and parse it into a Point structure
+    auto startTime = chrono::high_resolution_clock::now();
     while (getline(csvFile, line)) {
         Point point = parsePoint(line);
         string record = point.toString();
@@ -73,10 +75,12 @@ int main(void) {
 
         // Write point into datafile and insert it to the tree
         dataFile << record << endl;
-        rStarTree->insert(point, blockCount, slot);
+        rStarTree->insertData(point, blockCount, slot);
         slot++;
         currentBlockSize += maxObjectSize;
     }
+    auto endTime = chrono::high_resolution_clock::now();
+    chrono::duration<double, std::micro> duration = endTime - startTime;
 
     // Save the R* tree index to the index file and the data file
     // if (rStarTree->saveIndex(INDEX_FILE) == 1)
@@ -89,8 +93,8 @@ int main(void) {
 
     cout<<"-----"<<endl;
 
-    Point queryPoint(vector<double>{1,0});
-    vector<ID> kres = rStarTree->kNearestNeighbors(queryPoint, 3);
+    Point queryPoint(vector<double>{2,2});
+    vector<ID> kres = rStarTree->kNearestNeighbors(queryPoint, 4);
     for (int i = 0; i < kres.size(); i++)
         cout << findObjectById(kres.at(i), pointsPerBlock).getID() << endl;
 
@@ -99,17 +103,23 @@ int main(void) {
     vector<ID> sres = rStarTree->skylineQuery();
     for(int i = 0; i < sres.size(); i++)
         cout << findObjectById(sres.at(i), pointsPerBlock).getID() << endl;
-
     cout<<"-----"<<endl;
 
-    //rStarTree->display(); 
+    rStarTree->display(); 
+    cout<<"-----"<<endl;
+    Point deleteP(vector<double>{2,3});
+    rStarTree->deletePoint(deleteP);
+    rStarTree->display();
 
-    //cout<<"-----"<<endl;
-    //Point ptodel(vector <double> {4,1});
-    //rStarTree->deletePoint(ptodel);  
-    //rStarTree->display();
-
+    cout << "Insertion completed." << endl;
+    cout << "Execution time: " << duration.count() << " milliseconds" << endl;
     
+    // Save the R* tree index to the index file and the data file
+    // if (rStarTree->saveIndex(INDEX_FILE) == 1)
+    //     return 1;
+    // cout << "Leaves of the R* Tree:" << endl;
+    // rStarTree->display();
+
     indexFile.close();
     dataFile.close();
     csvFile.close();
