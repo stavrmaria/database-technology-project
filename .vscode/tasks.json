@@ -1,0 +1,36 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++: g++.exe build active file",
+      "command": "C:\\MinGW\\bin\\g++.exe",
+			"args": [
+				"-std=c++17",
+				"-I${workspaceFolder}\\include",
+				"${workspaceFolder}\\src\\main.cpp",
+				"${workspaceFolder}\\src\\pugixml.cpp",
+				"${workspaceFolder}\\src\\Node.cpp",
+				"${workspaceFolder}\\src\\Point.cpp",
+				"${workspaceFolder}\\src\\BoundingBox.cpp",
+				"${workspaceFolder}\\src\\Queries.cpp",
+				"${workspaceFolder}\\src\\RStarTree.cpp",
+				"${workspaceFolder}\\src\\bulkLoading.cpp",
+				"${workspaceFolder}\\src\\fileHandling.cpp",
+				"-o",
+				"${workspaceFolder}\\program.exe"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: C:\\mingw32\\bin\\g++.exe"
+		}
+	]
+}
