@@ -13,12 +13,13 @@ using namespace std;
 
 string doubleToBinaryString(double);
 string zOrderValue(vector<double>);
+newRStarTree *constructFromIndex(const string &indexFileName);
 
 int main() {
     // Set the points attributes
     int dimensions = 2;
     int maxObjectSize = dimensions * sizeof(double) + 100 * sizeof(char);
-    int maxEntries = int(BLOCK_SIZE / maxObjectSize);
+    int maxEntries = 3;//int(BLOCK_SIZE / maxObjectSize);
     newRStarTree *rStarTree = new newRStarTree(maxEntries, dimensions, maxObjectSize);
     unsigned int blockCount = 0;
     unsigned int pointCount = 0;
@@ -27,8 +28,7 @@ int main() {
     int pointsPerBlock = 0;
     string line;
 
-    // Transform the map file to a csv file that has
-    // the format: id, name, lat, lon, ...
+    // Transform the map file to a csv file that has the format: id, name, lat, lon, ...
     writeToCSV(CSV_FILE, MAP_FILE, attributeNames, totalPoints);
 
     // Write the data of the .csv file into blocks
@@ -53,7 +53,7 @@ int main() {
 
     cout << "Inserting points..." << endl;
 
-    pointsPerBlock = int(BLOCK_SIZE / maxObjectSize);
+    pointsPerBlock = 3;// int(BLOCK_SIZE / maxObjectSize);
     dataFile << "BLOCK" << blockCount++ << endl;
     dataFile << "block size:" << BLOCK_SIZE << endl;
     dataFile << "points:" << totalPoints << endl;
@@ -85,16 +85,22 @@ int main() {
     cout << "Insertion completed." << endl;
     cout << "Execution time: " << duration.count() << " milliseconds" << endl;
 
-    rStarTree->display();
-
     // Save the R* tree index to the index file and the data file
-    // if (rStarTree->saveIndex(INDEX_FILE) == 1)
-    //     return 1;
-    // cout << "Leaves of the R* Tree:" << endl;
+    if (rStarTree->saveIndex(INDEX_FILE) == 1) {
+        cout << "Error: construction of the index was unsuccessful." << endl;
+        return 1;
+    }
+
+     cout << "Leaves of the original R* Tree:" << endl;
+     rStarTree->display();
 
     indexFile.close();
     dataFile.close();
     csvFile.close();
+
+    newRStarTree *rStarTreeFromIndex = nullptr;
+    rStarTreeFromIndex = constructFromIndex(INDEX_FILE);
+    rStarTreeFromIndex->display();
 
     return 0;
 }

@@ -11,7 +11,7 @@ using namespace std;
 int newRStarTree::saveIndex(const string &indexFileName) {
     fstream indexfile;
     indexfile.open(indexFileName, ios::out | ios::binary);
-    
+
     if (!indexfile) {
         cerr << "Error: could not create " << indexFileName << endl;
         return 1;
@@ -31,11 +31,16 @@ void newRStarTree::saveIndex(fstream& indexFile, Node* currentNode) {
         return;
     }
 
-    stack<Node*> nodeStack;
-    nodeStack.push(currentNode);
-    while (!nodeStack.empty()) {
-        currentNode = nodeStack.top();
-        nodeStack.pop();
+    indexFile.write((char*)(&this->dimensions), sizeof(int));
+    indexFile.write((char*)(&this->minEntries), sizeof(int));
+    indexFile.write((char*)(&this->maxEntries), sizeof(int));
+    indexFile.write((char*)(&this->maxObjectSize), sizeof(int));
+
+    queue<Node*> nodeQueue;
+    nodeQueue.push(currentNode);
+    while (!nodeQueue.empty()) {
+        currentNode = nodeQueue.front();
+        nodeQueue.pop();
 
         // Serialize and save the current node in the index file
         indexFile.write((char*)&(*currentNode), sizeof(*currentNode));
@@ -45,7 +50,7 @@ void newRStarTree::saveIndex(fstream& indexFile, Node* currentNode) {
             if (entry->childNode == nullptr) {
                 continue;
             }
-            nodeStack.push(entry->childNode);
+            nodeQueue.push(entry->childNode);
         }
     }
 }
@@ -53,7 +58,7 @@ void newRStarTree::saveIndex(fstream& indexFile, Node* currentNode) {
 int newRStarTree::saveData(const string &dataFileName) {
     fstream dataFile;
     dataFile.open(dataFileName, ios::out | ios::binary);
-    
+
     if (!dataFile) {
         cerr << "Error: could not create " << dataFileName << endl;
         return 1;
@@ -114,14 +119,15 @@ Point parsePoint(string line) {
     point.setID(stoull(row.at(0)));
     if (row.at(1) != "")
         point.setName(row.at(1));
-    
+
     for (int i = 2; i < row.size(); i++)
         point.addDimension(stod(row.at(i)));
-    
+
     row.clear();
     return point;
 }
 
+// Find the point based on it's location on the datafile
 Point findObjectById(ID id, int &pointsPerBlock) {
     ifstream datafile(DATA_FILE);
     unsigned int lineIndex = 1;
@@ -171,16 +177,16 @@ void writeToCSV(const string& csvFileName, const string& mapFileName, const vect
         }
 
         // Write the data to the CSV file
-            for (const auto& row : csvData) {
-                for (size_t i = 0; i < row.size(); ++i) {
-                    csvFile << row[i];
-                    if (i != row.size() - 1) {
-                        csvFile << ",";
-                    }
+        for (const auto& row : csvData) {
+            for (size_t i = 0; i < row.size(); ++i) {
+                csvFile << row[i];
+                if (i != row.size() - 1) {
+                    csvFile << ",";
                 }
-
-                csvFile << endl;
             }
+
+            csvFile << endl;
+        }
 
         cout << "CSV file created successfully." << endl;
         csvData.clear();
@@ -189,4 +195,43 @@ void writeToCSV(const string& csvFileName, const string& mapFileName, const vect
     }
 
     csvFile.close();
+}
+
+newRStarTree *constructFromIndex(const string &indexFileName) {
+    cout << "Constructing the R* Tree from the " << indexFileName << "..." << endl;
+
+    ifstream indexFile(indexFileName, ios::binary);
+    if (!indexFile) {
+        cerr << "Failed to open the index file." << endl;
+        return nullptr;
+    }
+
+    // Get the basic attributes of the R* Tree
+    int dimensions;
+    int minEntries;
+    int maxEntries;
+    int maxObjectSize;
+    indexFile.read(reinterpret_cast<char*>(&dimensions), sizeof(int));
+    indexFile.read(reinterpret_cast<char*>(&minEntries), sizeof(int));
+    indexFile.read(reinterpret_cast<char*>(&maxEntries), sizeof(int));
+    indexFile.read(reinterpret_cast<char*>(&maxObjectSize), sizeof(int));
+
+    cout << "Collected the basic attributes..." << endl;
+
+    newRStarTree* tree = new newRStarTree(maxEntries, dimensions, maxObjectSize);
+    queue<Node*> nodeQueue;
+    Node* root = new Node(dimensions, true);
+    indexFile.read(reinterpret_cast<char*>(root), sizeof(Node));
+
+    if (!indexFile) {
+        cout << "Read operation failed." << endl;
+        return nullptr;
+    } else {
+        tree->setRoot(root);
+    }
+
+    indexFile.close();
+    cout << "Construction completed." << endl;
+
+    return tree;
 }

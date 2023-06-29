@@ -24,6 +24,14 @@ newRStarTree::~newRStarTree() {
     root = nullptr;
 }
 
+void newRStarTree::setRoot(Node *root) {
+    this->root = root;
+}
+
+Node *newRStarTree::getRoot() {
+    return this->root;
+}
+
 void newRStarTree::destroyNode(Node* currentNode) {
     if (currentNode->isLeafNode()) {
         // Delete leaf node and its entries
@@ -390,7 +398,7 @@ void newRStarTree::display() {
         return;
     }
 
-    int pointsPerBlock = int(BLOCK_SIZE / maxObjectSize);
+    int pointsPerBlock = 3;// int(BLOCK_SIZE / maxObjectSize);
     stack<Node*> nodeStack;
     nodeStack.push(this->root);
     int count = 0;
