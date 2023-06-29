@@ -1,9 +1,9 @@
 BLOCK0
 block size:32768
-points:14
-points/block:282
+points:0
+points/block:3
 dimensions:2
-capacity:282
+capacity:3
 BLOCK1
 1,,1.000000,1.000000
 2,,2.000000,3.000000
