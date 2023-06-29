@@ -27,4 +27,4 @@ The R*-tree supports the following functions:
 - [x] Support skyline queries
 
 ### Test file visualization (14 points)
-![Test file visualization](visualization.png)
+![Test file visualization](/extra/visualization.png)

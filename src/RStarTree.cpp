@@ -60,9 +60,10 @@ void newRStarTree::insert(Entry* entry, Node* currentNode, int level) {
     Node* newNode;
     Node* parentNode = currentNode->getParent();
 
-    if (parentNode != nullptr && parentNode->findEntry(currentNode) == nullptr) {
-        return;
-    } else if (currentNode->entriesSize() <= this->maxEntries) {
+//     if (parentNode != nullptr && parentNode->findEntry(currentNode) == nullptr) {
+//         return;
+//     } else
+    if (currentNode->entriesSize() <= this->maxEntries) {
         adjustTree(currentNode);
         return;
     }
@@ -145,7 +146,6 @@ Node* newRStarTree::chooseSubtree(Entry* newEntry, Node* node, int level) {
                     entryToChoose = entry;
                 }
             }
-
         }
 
         currentNode = entryToChoose->childNode;
@@ -237,6 +237,15 @@ void newRStarTree::splitNode(Node *currentNode, Node *newNode) {
     for (int i = this->minEntries - 1 + selectedSplitIndex; i < this->maxEntries + 1; i++)
         newNode->insertEntry(sortedEntries.at(i));
 
+    // Update the parents as well
+    if (!currentNode->isLeafNode() || !newNode->isLeafNode()) {
+        for (int i = 0; i < this->minEntries - 1 + selectedSplitIndex; i++)
+            sortedEntries.at(i)->childNode->setParent(currentNode);
+
+        for (int i = this->minEntries - 1 + selectedSplitIndex; i < this->maxEntries + 1; i++)
+            sortedEntries.at(i)->childNode->setParent(newNode);
+    }
+
     sortedEntries.clear();
 }
 
@@ -325,7 +334,15 @@ void newRStarTree::adjustTree(Node *currentNode) {
         // Adjust the MBB of the parent entry so that it tightly encloses all entry rectangles in the current node
         Node *parentNode = currentNode->getParent();
         parentNode->setLevel(currentNode->getLevel() + 1);
-        Entry *currentNodeEntry = parentNode->findEntry(currentNode);
+        Entry *currentNodeEntry = nullptr;
+        // Find the entry of the parent that contains the node
+        for (const auto &parentEntry : parentNode->getEntries()) {
+            if (parentEntry->childNode == currentNode) {
+                currentNodeEntry = parentEntry;
+                break;
+            }
+        }
+
         BoundingBox newBoundingBox(this->dimensions);
 
         for (const auto entry : currentNode->getEntries())
@@ -368,11 +385,11 @@ void createChildEntry(Node* currentNode, Node* parentNode) {
 }
 
 void newRStarTree::deletePoint(Point& point) {
+    //cout<<point<<endl;
     Entry* entryToDelete = findEntryToDelete(point, this->root);
     if (entryToDelete != nullptr) {
         Node* leafNode = entryToDelete->childNode;
         removeEntry(entryToDelete, leafNode);
-        delete entryToDelete;
         condenseTree(leafNode);
     }
 }
@@ -400,8 +417,8 @@ Entry* newRStarTree::findEntryToDelete(Point& point, Node* currentNode) {
 }
 
 void newRStarTree::removeEntry(Entry* entry, Node* leafNode) {
+    cout<<entry->id->slot<<endl;
     leafNode->deleteEntry(entry);
-    delete entry;
 }
 
 void newRStarTree::condenseTree(Node* leafNode) {
@@ -415,7 +432,6 @@ void newRStarTree::condenseTree(Node* leafNode) {
 
             if (currentNode->isLeafNode()) {
                 parentNode->removeChild(currentNode);
-                delete currentNode;
             } else {
                 adjustNonLeafNode(currentNode, parentNode);
             }
@@ -430,14 +446,9 @@ void newRStarTree::condenseTree(Node* leafNode) {
     if (this->root->entriesSize() == 0 && !this->root->isLeafNode()) {
         Node* newRoot = this->root->getEntries()[0]->childNode;
         newRoot->setParent(nullptr);
-        delete this->root;
         this->root = newRoot;
     }
 
-    // Clean up visited nodes
-    for (auto node : visitedNodes) {
-        delete node;
-    }
 }
 
 void newRStarTree::adjustNonLeafNode(Node* currentNode, Node* parentNode) {

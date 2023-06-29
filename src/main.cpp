@@ -93,8 +93,8 @@ int main() {
 
     cout<<"-----"<<endl;
 
-    Point queryPoint(vector<double>{2,2});
-    vector<ID> kres = rStarTree->kNearestNeighbors(queryPoint, 4);
+    Point queryPoint(vector<double>{4,1});
+    vector<ID> kres = rStarTree->kNearestNeighbors(queryPoint, 2);
     for (int i = 0; i < kres.size(); i++)
         cout << findObjectById(kres.at(i), pointsPerBlock).getID() << endl;
 
@@ -107,13 +107,14 @@ int main() {
 
     rStarTree->display(); 
     cout<<"-----"<<endl;
-    Point deleteP(vector<double>{2,3});
-    rStarTree->deletePoint(deleteP);
-    rStarTree->display();
 
     cout << "Insertion completed." << endl;
     cout << "Execution time: " << duration.count() << " milliseconds" << endl;
-    
+
+    Point deleteP({4, 1});
+    rStarTree->deletePoint(deleteP);
+    rStarTree->display();
+
     // Save the R* tree index to the index file and the data file
     // if (rStarTree->saveIndex(INDEX_FILE) == 1)
     //     return 1;
