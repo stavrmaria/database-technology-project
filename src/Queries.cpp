@@ -1,6 +1,7 @@
 #include "RStarTree.h"
 #include "Node.h"
 #include <queue>
+#include <set>
 
 // Implementation of range query
 vector<ID> newRStarTree::rangeQuery(BoundingBox &boundingBox) {
@@ -38,42 +39,36 @@ vector<ID> newRStarTree::rangeQuery(BoundingBox &boundingBox) {
 
 struct comparePairs {
     bool operator()(const pair<double, ID> &a, const pair<double, ID> &b) {
-        return a.first > b.first;
+        return a.first < b.first;
     }
 };
 
 // Implementation of k-nearest neighbors query
 vector<ID> newRStarTree::kNearestNeighbors(Point& queryPoint, int k) {
     vector<ID> kNeighbors = {};
-
     if (this->root == nullptr) {
         return kNeighbors;
     }
 
-    // return kNeighbors;
     // Priority queue to store the nearest neighbors
-    priority_queue<pair<double, ID>, vector<pair<double, ID>>, comparePairs> nearestNeighbors;
+    set<pair<double, ID>, comparePairs> nearestNeighbors;
     stack<Node*> node;
     node.push(this->root);
 
     while (!node.empty()) {
         Node* current = node.top();
         node.pop();
-
         if (current->isLeafNode()) {
             for (auto entry : current->getEntries()) {
-
-                //SOS HOW TO TAKE THE POINT FROM AN ENTRY
                 Point entryPoint(entry->boundingBox->getMinCoordinates());
                 double distance = queryPoint.getDistance(entryPoint);
-                if (nearestNeighbors.size() < k || distance < nearestNeighbors.top().first) {
-                    // Add the distance and ID pair to the priority queue
-                    nearestNeighbors.push(make_pair(distance, *(entry->id)));
 
+                if (nearestNeighbors.size() < k || distance < nearestNeighbors.rbegin()->first) {
+                    // Add the distance and ID pair to the priority queue
+                    nearestNeighbors.insert(make_pair(distance, *(entry->id)));
                     // If the number of neighbors exceeds k, remove the farthest neighbor
-                    if (nearestNeighbors.size() > k) {
-                        nearestNeighbors.pop();
-                    }
+                    if (nearestNeighbors.size() > k)
+                        nearestNeighbors.erase(--nearestNeighbors.end());
                 }
             }
         }
@@ -88,13 +83,8 @@ vector<ID> newRStarTree::kNearestNeighbors(Point& queryPoint, int k) {
     }
 
     // Extract the IDs of the nearest neighbors from the priority queue
-    while (!nearestNeighbors.empty()) {
-        kNeighbors.push_back(nearestNeighbors.top().second);
-        nearestNeighbors.pop();
-    }
-
-    // Reverse the results to obtain the nearest neighbors in ascending order of distance
-    reverse(kNeighbors.begin(), kNeighbors.end());
+    for (const auto& neighbor : nearestNeighbors)
+        kNeighbors.push_back(neighbor.second);
 
     return kNeighbors;
 }

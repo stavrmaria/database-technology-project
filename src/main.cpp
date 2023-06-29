@@ -85,11 +85,12 @@ int main() {
     cout << "Insertion completed." << endl;
     cout << "Execution time: " << duration.count() << " milliseconds" << endl;
 
+    rStarTree->display();
+
     // Save the R* tree index to the index file and the data file
     // if (rStarTree->saveIndex(INDEX_FILE) == 1)
     //     return 1;
     // cout << "Leaves of the R* Tree:" << endl;
-    rStarTree->display();
 
     indexFile.close();
     dataFile.close();
