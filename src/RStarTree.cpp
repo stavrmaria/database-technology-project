@@ -60,9 +60,10 @@ void newRStarTree::insert(Entry* entry, Node* currentNode, int level) {
     Node* newNode;
     Node* parentNode = currentNode->getParent();
 
-    if (parentNode != nullptr && parentNode->findEntry(currentNode) == nullptr) {
-        return;
-    } else if (currentNode->entriesSize() <= this->maxEntries) {
+//     if (parentNode != nullptr && parentNode->findEntry(currentNode) == nullptr) {
+//         return;
+//     } else
+    if (currentNode->entriesSize() <= this->maxEntries) {
         adjustTree(currentNode);
         return;
     }
@@ -145,7 +146,6 @@ Node* newRStarTree::chooseSubtree(Entry* newEntry, Node* node, int level) {
                     entryToChoose = entry;
                 }
             }
-
         }
 
         currentNode = entryToChoose->childNode;
@@ -237,6 +237,15 @@ void newRStarTree::splitNode(Node *currentNode, Node *newNode) {
     for (int i = this->minEntries - 1 + selectedSplitIndex; i < this->maxEntries + 1; i++)
         newNode->insertEntry(sortedEntries.at(i));
 
+    // Update the parents as well
+    if (!currentNode->isLeafNode() || !newNode->isLeafNode()) {
+        for (int i = 0; i < this->minEntries - 1 + selectedSplitIndex; i++)
+            sortedEntries.at(i)->childNode->setParent(currentNode);
+
+        for (int i = this->minEntries - 1 + selectedSplitIndex; i < this->maxEntries + 1; i++)
+            sortedEntries.at(i)->childNode->setParent(newNode);
+    }
+
     sortedEntries.clear();
 }
 
@@ -325,7 +334,15 @@ void newRStarTree::adjustTree(Node *currentNode) {
         // Adjust the MBB of the parent entry so that it tightly encloses all entry rectangles in the current node
         Node *parentNode = currentNode->getParent();
         parentNode->setLevel(currentNode->getLevel() + 1);
-        Entry *currentNodeEntry = parentNode->findEntry(currentNode);
+        Entry *currentNodeEntry = nullptr;
+        // Find the entry of the parent that contains the node
+        for (const auto &parentEntry : parentNode->getEntries()) {
+            if (parentEntry->childNode == currentNode) {
+                currentNodeEntry = parentEntry;
+                break;
+            }
+        }
+
         BoundingBox newBoundingBox(this->dimensions);
 
         for (const auto entry : currentNode->getEntries())

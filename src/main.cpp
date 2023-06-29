@@ -22,14 +22,14 @@ int main() {
     newRStarTree *rStarTree = new newRStarTree(maxEntries, dimensions, maxObjectSize);
     unsigned int blockCount = 0;
     unsigned int pointCount = 0;
+    unsigned int totalPoints = 0;
     unsigned int slot = 0;
-    unsigned int currentBlockSize = 0;
     int pointsPerBlock = 0;
     string line;
 
     // Transform the map file to a csv file that has
     // the format: id, name, lat, lon, ...
-    writeToCSV(CSV_FILE, MAP_FILE, attributeNames, pointCount);
+    writeToCSV(CSV_FILE, MAP_FILE, attributeNames, totalPoints);
 
     // Write the data of the .csv file into blocks
     fstream dataFile(DATA_FILE, ios::out);
@@ -51,14 +51,15 @@ int main() {
         return 1;
     }
 
+    cout << "Inserting points..." << endl;
+
     pointsPerBlock = int(BLOCK_SIZE / maxObjectSize);
     dataFile << "BLOCK" << blockCount++ << endl;
     dataFile << "block size:" << BLOCK_SIZE << endl;
-    dataFile << "points:" << pointCount << endl;
+    dataFile << "points:" << totalPoints << endl;
     dataFile << "points/block:" << pointsPerBlock << endl;
     dataFile << "dimensions:" << dimensions << endl;
     dataFile << "capacity:" << maxEntries << endl;
-    dataFile << "BLOCK" << blockCount << endl;
 
     // Read each line of the file and parse it into a Point structure
     auto startTime = chrono::high_resolution_clock::now();
@@ -66,29 +67,29 @@ int main() {
         Point point = parsePoint(line);
         string record = point.toString();
 
-        if (currentBlockSize + maxObjectSize > BLOCK_SIZE) {
-            currentBlockSize = 0;
+        if (pointCount % pointsPerBlock == 0) {
             slot = 0;
-            dataFile << "BLOCK" << ++blockCount << endl;
+            dataFile << "BLOCK" << blockCount++ << endl;
         }
 
         // Write point into datafile and insert it to the tree
         dataFile << record << endl;
-        rStarTree->insertData(point, blockCount, slot);
+        unsigned int blockID = blockCount - 1;
+        rStarTree->insertData(point, blockID, slot);
         slot++;
-        currentBlockSize += maxObjectSize;
+        pointCount++;
     }
     auto endTime = chrono::high_resolution_clock::now();
     chrono::duration<double, std::micro> duration = endTime - startTime;
 
     cout << "Insertion completed." << endl;
     cout << "Execution time: " << duration.count() << " milliseconds" << endl;
-    
+
     // Save the R* tree index to the index file and the data file
     // if (rStarTree->saveIndex(INDEX_FILE) == 1)
     //     return 1;
     // cout << "Leaves of the R* Tree:" << endl;
-    // rStarTree->display();
+    rStarTree->display();
 
     indexFile.close();
     dataFile.close();
