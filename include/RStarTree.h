@@ -49,6 +49,11 @@ public:
     vector<ID> kNearestNeighbors(Point& queryPoint, int k);
     int saveIndex(const string &indexFileName);
     int saveData(const string &dataFileName);
+
+    void deletePoint(Point&);
+    pair<Entry*, Node*> findEntryToDelete(Point& , Node*);
+    void condenseTree(Node*);
+    void adjustNonLeafNode(Node* , Node*);
 };
 
 #endif

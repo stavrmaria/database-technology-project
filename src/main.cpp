@@ -98,9 +98,5 @@ int main() {
     dataFile.close();
     csvFile.close();
 
-    newRStarTree *rStarTreeFromIndex = nullptr;
-    rStarTreeFromIndex = constructFromIndex(INDEX_FILE);
-    rStarTreeFromIndex->display();
-
     return 0;
 }

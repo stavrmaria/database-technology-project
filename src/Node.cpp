@@ -108,32 +108,15 @@ void Node::clearBoudingBox(){
     }
 }
 
-void Node::adjustBoundingBoxes() {
-    if (entries.empty()) {
-        // No entries in the node, clear the bounding box
-        clearBoudingBox();
-    } else {
-        // Update the bounding box based on the entries
-        clearBoudingBox();
-        for (auto entry : entries) {
-            entry->boundingBox->includeBox(*(entry->boundingBox));
+void Node:: deleteEntry(Entry* target) {
+    if (this == nullptr)
+        return;
+
+    for (auto it = entries.begin(); it != entries.end(); ++it) {
+        if (*it == target) {
+            entries.erase(it);
+            return;
         }
-    }
-
-    if (parent != nullptr) {
-        // Recursively adjust the parent's bounding box
-        parent->adjustBoundingBoxes();
-    }
-}
-
-void Node:: deleteEntry(Entry* entry) {
-    Node* parentNode = entry->childNode->getParent();
-    parentNode->deleteEntry(entry);
-
-    // Adjust bounding boxes on the path to the root
-    while (parentNode != nullptr) {
-        parentNode->adjustBoundingBoxes();
-        parentNode = parentNode->getParent();
     }
 }
 
