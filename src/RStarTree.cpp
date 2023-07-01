@@ -518,3 +518,101 @@ void newRStarTree::display() {
 
     cout << "Points = " << count << endl;
 }
+
+/********************* Deletion Functions ********************/
+void newRStarTree::deletePoint(Point& point) {
+    pair<Entry*, Node*> pairToDelete = findEntryToDelete(point, this->root);
+    if (pairToDelete.first != nullptr) {
+        Node* leafNode = pairToDelete.second;
+        leafNode->deleteEntry(pairToDelete.first);
+        Node* parentNode = pairToDelete.second->getParent();
+        // Adjust bounding boxes on the path to the root
+        if (parentNode != nullptr)
+            adjustTree(parentNode);
+        condenseTree(pairToDelete.second);
+    }
+}
+
+pair<Entry*, Node*> newRStarTree::findEntryToDelete(Point& point, Node* currentNode) {
+    stack<Node*> nodeStack;
+    nodeStack.push(currentNode);
+    while (!nodeStack.empty()) {
+        Node* current = nodeStack.top();
+        nodeStack.pop();
+        if (current->isLeafNode()) {
+            for (auto entry : current->getEntries()) {
+                if (entry->boundingBox->contains(point))
+                    return make_pair(entry, current);
+            }
+        }
+
+        for (auto entry : current->getEntries()) {
+            if (entry->childNode == nullptr)
+                continue;
+            if (entry->boundingBox->contains(point))
+                nodeStack.push(entry->childNode);
+        }
+    }
+
+    return make_pair(nullptr, nullptr); // Entry not found
+}
+
+void newRStarTree::condenseTree(Node* leafNode) {
+    Node* currentNode = leafNode;
+    unordered_set<Node*> visitedNodes;
+
+    while (currentNode->getParent() != nullptr) {
+        if (currentNode->entriesSize() < this->minEntries) {
+            Node* parentNode = currentNode->getParent();
+            visitedNodes.insert(currentNode);
+
+            if (currentNode->isLeafNode()) {
+                parentNode->removeChild(currentNode);
+            } else {
+                adjustNonLeafNode(currentNode, parentNode);
+            }
+
+            currentNode = parentNode;
+        } else {
+            adjustTree(currentNode);
+            currentNode = currentNode->getParent();
+        }
+    }
+
+    // Check if the root has become empty and has only one child
+    if (this->root->entriesSize() == 0 && !this->root->isLeafNode()) {
+        Node* newRoot = new Node(this->dimensions, true);
+        newRoot->setParent(nullptr);
+        this->root = newRoot;
+    }
+
+}
+
+void newRStarTree::adjustNonLeafNode(Node* currentNode, Node* parentNode) {
+    parentNode->removeChild(currentNode);
+    vector<Entry*> allEntries;
+
+    // Collect all entries in the current node and its siblings
+    for (auto siblingEntry : parentNode->getEntries()) {
+        Node* siblingNode = siblingEntry->childNode;
+        if (siblingNode != currentNode) {
+            for (auto entry : siblingNode->getEntries()) {
+                allEntries.push_back(entry);
+            }
+            siblingNode->clearEntries();
+        }
+    }
+
+    // Reinsert all entries
+    for (auto entry : currentNode->getEntries()) {
+        allEntries.push_back(entry);
+    }
+
+    // Clear current node entries
+    currentNode->clearEntries();
+
+    // Reinsert entries to get better distribution
+    for (auto entry : allEntries) {
+        insert(entry, this->root, currentNode->getLevel());
+    }
+}
