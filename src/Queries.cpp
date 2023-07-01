@@ -67,7 +67,6 @@ vector<ID> newRStarTree::kNearestNeighbors(Point& queryPoint, int k) {
                 Point entryPoint(entry->boundingBox->getMinCoordinates());
                 double distance = queryPoint.getDistance(entryPoint);
                 nearestNeighbors.push(make_pair(distance, *(entry->id)));
-
             }
 
         }
@@ -104,17 +103,21 @@ vector<ID> newRStarTree::skylineQuery() {
         Node* current = nodeStack.top();
         nodeStack.pop();
 
-       if (current->isLeafNode()) {
+        if (current->isLeafNode()) {
             for (auto entry : current->getEntries()) {
                 Point entryPoint(entry->boundingBox->getMinCoordinates());
 
                 bool isDominated = false;
-                for (ID id : skyline) {
-                    Point skylinePoint = findObjectById(id, maxObjectSize);
+                for (auto i = skyline.begin(); i != skyline.end(); ) {
+                    Point skylinePoint = findObjectById(*i, maxObjectSize);
                     
-                    if (skylinePoint.dominates(entryPoint)) {
+                    if (entryPoint.dominates(skylinePoint)) {
+                        i = skyline.erase(i);
+                    } else if (skylinePoint.dominates(entryPoint)) {
                         isDominated = true;
                         break;
+                    } else {
+                        ++i;
                     }
                 }
 
@@ -122,14 +125,14 @@ vector<ID> newRStarTree::skylineQuery() {
                     skyline.push_back(*(entry->id));
                 }
             }
-       }
-
-        // Push child nodes onto the stack
-        for (auto entry : current->getEntries()) {
-            if (entry->childNode == nullptr) {
-                continue;
+        } else {
+            // Push child nodes onto the stack
+            for (auto entry : current->getEntries()) {
+                if (entry->childNode == nullptr) {
+                    continue;
+                }
+                nodeStack.push(entry->childNode);
             }
-            nodeStack.push(entry->childNode);
         }
     }
 

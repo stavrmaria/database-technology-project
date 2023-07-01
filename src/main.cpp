@@ -89,7 +89,7 @@ int main() {
     // if (rStarTree->saveIndex(INDEX_FILE) == 1)
     //     return 1;
 
-    BoundingBox bb(dimensions, vector<double>{4.5, 2}, vector<double> {8, 5});
+    BoundingBox bb(dimensions, vector<double>{4, 2}, vector<double> {8, 5});
     vector<ID> res = rStarTree->rangeQuery(bb);
     for (int i = 0; i < res.size(); i++)
         cout << findObjectById(res.at(i), pointsPerBlock).getID() << endl;
@@ -135,6 +135,10 @@ int main() {
     indexFile.close();
     dataFile.close();
     csvFile.close();
+
+    newRStarTree *rStarTreeFromIndex = nullptr;
+    rStarTreeFromIndex = constructFromIndex(INDEX_FILE);
+    rStarTreeFromIndex->display();
 
     return 0;
 }

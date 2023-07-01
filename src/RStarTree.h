@@ -48,11 +48,6 @@ public:
     vector<ID> rangeQuery(BoundingBox &);
     vector<ID> kNearestNeighbors(Point& queryPoint, int k);
     vector<ID> skylineQuery();
-    void deletePoint(Point&);
-    Entry* findEntryToDelete(Point& , Node*);
-    void removeEntry(Entry* , Node*);
-    void condenseTree(Node*);
-    void adjustNonLeafNode(Node* , Node*);
     int saveIndex(const string &indexFileName);
     int saveData(const string &dataFileName);
 
