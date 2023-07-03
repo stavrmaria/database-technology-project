@@ -398,7 +398,7 @@ void newRStarTree::display() {
         return;
     }
 
-    int pointsPerBlock = 3;// int(BLOCK_SIZE / maxObjectSize);
+    int pointsPerBlock = int(BLOCK_SIZE / maxObjectSize);
     stack<Node*> nodeStack;
     nodeStack.push(this->root);
     int count = 0;

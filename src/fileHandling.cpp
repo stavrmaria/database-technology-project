@@ -157,7 +157,7 @@ Point findObjectById(ID id, int &pointsPerBlock) {
 }
 
 // Convert the .osm file into a .csv file based on it's the attributes
-void writeToCSV(const string& csvFileName, const string& mapFileName, const vector<string>& attributeNames, unsigned int &pointCount) {
+void writeToCSV(const string& csvFileName, const string& mapFileName, const vector<string>& attributeNames, unsigned int &pointCount, bool &sortFirst) {
     ofstream csvFile(csvFileName);
     pugi::xml_document doc;
 
