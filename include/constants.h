@@ -9,7 +9,7 @@ const string INDEX_FILE = "indexfile.bin";
 const string SORTED_CSV_FILE = "sorted_input.csv";
 const vector<string> attributeNames = {"id", "name", "lat", "lon"};
 
-#define BLOCK_SIZE 1 * 1024
+#define BLOCK_SIZE 32 * 1024
 #define REINSERTION_PER 0.3
 #define ERROR 0.0001
 
