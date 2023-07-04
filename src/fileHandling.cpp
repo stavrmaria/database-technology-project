@@ -31,10 +31,11 @@ void newRStarTree::saveIndex(fstream& indexFile, Node* currentNode) {
         return;
     }
 
-    indexFile.write((char*)(&this->dimensions), sizeof(int));
-    indexFile.write((char*)(&this->minEntries), sizeof(int));
-    indexFile.write((char*)(&this->maxEntries), sizeof(int));
-    indexFile.write((char*)(&this->maxObjectSize), sizeof(int));
+    // Save the basic attributes of the R* Tree
+    indexFile.write(reinterpret_cast<char*>(&dimensions), sizeof(int));
+    indexFile.write(reinterpret_cast<char*>(&minEntries), sizeof(int));
+    indexFile.write(reinterpret_cast<char*>(&maxEntries), sizeof(int));
+    indexFile.write(reinterpret_cast<char*>(&maxObjectSize), sizeof(int));
 
     queue<Node*> nodeQueue;
     nodeQueue.push(currentNode);
@@ -43,14 +44,13 @@ void newRStarTree::saveIndex(fstream& indexFile, Node* currentNode) {
         nodeQueue.pop();
 
         // Serialize and save the current node in the index file
-        indexFile.write((char*)&(*currentNode), sizeof(*currentNode));
+        currentNode->serializeNode(indexFile);
 
-        // Push child nodes onto the stack
-        for (auto entry : currentNode->getEntries()) {
-            if (entry->childNode == nullptr) {
-                continue;
+        // Push child nodes onto the queue
+        if (!currentNode->isLeafNode()) {
+            for (auto& child : currentNode->getEntries()) {
+                nodeQueue.push(child->childNode);
             }
-            nodeQueue.push(entry->childNode);
         }
     }
 }
@@ -197,7 +197,7 @@ void writeToCSV(const string& csvFileName, const string& mapFileName, const vect
     csvFile.close();
 }
 
-newRStarTree *constructFromIndex(const string &indexFileName) {
+newRStarTree* constructFromIndex(const string& indexFileName) {
     cout << "Constructing the R* Tree from the " << indexFileName << "..." << endl;
 
     ifstream indexFile(indexFileName, ios::binary);
@@ -219,17 +219,28 @@ newRStarTree *constructFromIndex(const string &indexFileName) {
     cout << "Collected the basic attributes..." << endl;
 
     newRStarTree* tree = new newRStarTree(maxEntries, dimensions, maxObjectSize);
-    queue<Node*> nodeQueue;
-    Node* root = new Node(dimensions, true);
-    indexFile.read(reinterpret_cast<char*>(root), sizeof(Node));
+    Node* root = new Node(dimensions, false);
+    root->deserializeNode(indexFile);
 
-    if (!indexFile) {
-        cout << "Read operation failed." << endl;
-        return nullptr;
-    } else {
-        tree->setRoot(root);
+    stack<Node*> nodeStack;
+    nodeStack.push(root);
+    while (!nodeStack.empty()) {
+        Node* current = nodeStack.top();
+        nodeStack.pop();
+
+        for (const auto &entry : current->getEntries()) {
+            if (current->getLevel() < 1)
+                continue;
+            int isLeaf = (current->getLevel() == 1);
+            entry->childNode = new Node(dimensions, isLeaf);
+            entry->childNode->setParent(current);
+            entry->childNode->deserializeNode(indexFile);
+            if (!entry->childNode->isLeafNode())
+                nodeStack.push(entry->childNode);
+        }
     }
 
+    tree->setRoot(root);
     indexFile.close();
     cout << "Construction completed." << endl;
 

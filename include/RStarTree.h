@@ -43,6 +43,7 @@ public:
     ~newRStarTree();
     void setRoot(Node*);
     Node *getRoot();
+    int getDimensions();
     void insertData(Point&, unsigned int&, unsigned int&);
     void display();
     vector<ID> rangeQuery(BoundingBox &);

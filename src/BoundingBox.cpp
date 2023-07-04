@@ -51,9 +51,10 @@ double BoundingBox::getArea() const {
 // check if a point is inside the bounding box
 bool BoundingBox::contains(const Point &point) const {
     for (int i = 0; i < this->n; i++) {
-        if (point.getDimension(i) < this->minCoordinates.at(i))
-            return false;    
-        if (point.getDimension(i) > this->maxCoordinates.at(i))
+        if (point.getCoordinates().at(i) < this->minCoordinates.at(i))
+            return false;
+
+        if (point.getCoordinates().at(i) > this->maxCoordinates.at(i))
             return false;
     }
 
@@ -166,5 +167,29 @@ void BoundingBox::reset() {
     for (int i = 0; i < this->n; i++) {
         this->minCoordinates.push_back(numeric_limits<double>::infinity());
         this->maxCoordinates.push_back(0);
+    }
+}
+
+void BoundingBox::serialize(fstream &indexFile) {
+    for (const auto& value : minCoordinates)
+        indexFile.write(reinterpret_cast<const char*>(&value), sizeof(double));
+    for (const auto& value : maxCoordinates)
+        indexFile.write(reinterpret_cast<const char*>(&value), sizeof(double));
+}
+
+void BoundingBox::deserialize(ifstream& indexFile) {
+    // Clear the vectors before populating with deserialized values
+    minCoordinates.clear();
+    maxCoordinates.clear();
+
+    double value;
+    for (int i = 0; i < n; i++) {
+        indexFile.read(reinterpret_cast<char*>(&value), sizeof(double));
+        minCoordinates.push_back(value);
+    }
+
+    for (int i = 0; i < n; i++) {
+        indexFile.read(reinterpret_cast<char*>(&value), sizeof(double));
+        maxCoordinates.push_back(value);
     }
 }

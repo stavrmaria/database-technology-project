@@ -3,6 +3,7 @@
 
 #include "Point.h"
 #include <limits>
+#include <fstream>
 
 class BoundingBox {
 private:
@@ -26,6 +27,8 @@ public:
     Point getCenter() const;
     bool compareBoundingBox(const BoundingBox&, int);
     void reset();
+    void serialize(fstream &);
+    void deserialize(ifstream&);
 };
 
 #endif

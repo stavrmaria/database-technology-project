@@ -28,6 +28,10 @@ void newRStarTree::setRoot(Node *root) {
     this->root = root;
 }
 
+int newRStarTree::getDimensions() {
+    return this->root->getDimensions();
+}
+
 Node *newRStarTree::getRoot() {
     return this->root;
 }
