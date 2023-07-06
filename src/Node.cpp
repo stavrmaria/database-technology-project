@@ -169,3 +169,22 @@ Entry* Node::minEnlargedAreaEntry(const Entry *newEntry, double& enlargment) con
 bool Node::operator==(const Node &other) const {
     return other.entries == this->entries && other.parent == this->parent;
 }
+
+BoundingBox* Node::adjustBoundingBoxes() {
+    if (entries.empty()) {
+        return nullptr;
+    }
+
+    BoundingBox* adjustedBox = nullptr;
+
+    for (const auto& entry : entries) {
+        BoundingBox* childBox = entry->boundingBox;
+        if (adjustedBox == nullptr) {
+            adjustedBox = new BoundingBox(*childBox);
+        } else {
+            adjustedBox->getUpdatedArea(*childBox);
+        }
+    }
+
+    return adjustedBox;
+}

@@ -1,3 +1,4 @@
+#include <bitset>
 #include "Point.h"
 
 // empty point constructor
@@ -8,15 +9,15 @@ Point::Point() {
     this->coordinates.clear();
 }
 
-// point constructor based on it's attributes
+// point constructor based on its attributes
 Point::Point(unsigned long long id, string name, vector<double> coordinates) {
-    this->n = this->coordinates.size();
+    this->n = coordinates.size();
     this->id = id;
     this->name = name;
     this->coordinates = coordinates;
 }
 
-// point constructor based on it's attributes
+// point constructor based on its attributes
 Point::Point(vector<double> coordinates) {
     this->n = coordinates.size();
     this->id = 0;
@@ -124,4 +125,60 @@ bool Point:: dominates(Point& q) {
             return false;
     }
     return true;
+}
+string Point::doubleToBinaryString(double value) const {
+    // Create a union of a double and an unsigned long long
+    union {
+        double d;
+        unsigned long long u;
+    } converter;
+    converter.d = value;
+    unsigned long long binary = converter.u;
+
+    // Convert the binary value to a binary string
+    bitset<64> binaryBits(binary);
+    string binaryString = binaryBits.to_string();
+    return binaryString;
+}
+
+unsigned long long Point::zOrderValue() const {
+    string value = "";
+    vector<string> binaryRepresentation;
+
+    for (const auto &x : coordinates) {
+        string binString = doubleToBinaryString(x);
+        binaryRepresentation.push_back(binString);
+    }
+
+    int n = binaryRepresentation.at(0).size();
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < coordinates.size(); j++) {
+            value += binaryRepresentation.at(j)[i];
+        }
+    }
+
+    bitset<64> bitset(value);
+    return bitset.to_ullong();
+}
+
+istream& operator>>(istream& is, Point& p) {
+    string line;
+    if (getline(is, line)) {
+        stringstream ss(line);
+        string token;
+
+        if (getline(ss, token, ','))
+            p.setID(stoull(token));
+        if (getline(ss, token, ','))
+            p.setName(token);
+        p.resetDimensions();
+        while (getline(ss, token, ','))
+            p.addDimension(stod(token));
+    }
+    return is;
+}
+
+void Point::resetDimensions() {
+    this->n = 0;
+    this->coordinates.clear();
 }

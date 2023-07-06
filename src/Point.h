@@ -6,6 +6,7 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -15,6 +16,8 @@ class Point {
         string name;
         vector<double> coordinates;
         int n;
+
+        string doubleToBinaryString(double) const;
     public:
         Point();
         Point(const Point&);
@@ -34,6 +37,10 @@ class Point {
         string toString() const;
         bool dominates(Point&);
         friend ostream &operator<<(ostream&,const Point&);
+        friend istream &operator>>(istream&, Point&);
+        unsigned long long zOrderValue() const;
+
+    void resetDimensions();
 };
 
 #endif

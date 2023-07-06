@@ -35,7 +35,7 @@ class Node {
         int getLevel() const;
         void insertEntry(Entry*);
         void clearEntries();
-        void adjustBoundingBoxes();
+        BoundingBox* adjustBoundingBoxes();
         void clearBoudingBox();
         void deleteEntry(Entry*);
         void removeChild(Node *);
