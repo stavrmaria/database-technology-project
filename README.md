@@ -20,7 +20,7 @@ The R*-tree supports the following functions:
 ## Todo List
 - [X] Insert
 - [X] Change entries (save only the coordinates)
-- [ ] Delete
+- [X] Delete
 - [ ] Bulk loading
 - [x] Support range queries
 - [x] Support k-nn queries
