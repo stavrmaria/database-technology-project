@@ -101,6 +101,72 @@ int main() {
     //  cout << "Leaves of the original R* Tree:" << endl;
     //  rStarTree->display();
 
+    vector<Node*> leafNodes = {};
+    Node *currentLeafNode = new Node(dimensions, true);
+    leafNodes.push_back(currentLeafNode);
+    while (getline(sortedCsvFile, line)) {
+        Point point = parsePoint(line);
+        string record = point.toString();
+
+        if (currentBlockSize + maxObjectSize > BLOCK_SIZE) {
+            leafNodes.push_back(currentLeafNode);
+            currentLeafNode = new Node(dimensions, true);
+            currentBlockSize = 0;
+            slot = 0;
+            dataFile << "BLOCK" << ++blockCount << endl;
+        }
+
+        // Write point into datafile and insert it to the tree
+        dataFile << record << endl;
+
+        Entry *entry = new Entry();
+        entry->childNode = nullptr;
+        entry->boundingBox = new BoundingBox(dimensions, point.getCoordinates(), point.getCoordinates());
+        entry->id = new ID();
+        entry->id->blockID = blockCount;
+        entry->id->slot = slot;
+        currentLeafNode->insertEntry(entry);
+        currentBlockSize += maxObjectSize;
+
+        slot++;
+    }
+
+    cout << "bottom up" << endl;
+
+    // Bottom-up construction
+    vector<Node*> levelNodes = leafNodes;
+    int level = 0;
+    while (levelNodes.size() > 1) {
+        vector<Node*> newLevelNodes;
+//        int numLevelNodes = static_cast<int>(ceil(static_cast<double>(levelNodes.size()) / maxEntries));
+        int numLevelNodes = ceil(levelNodes.size() / maxEntries);
+        cout << numLevelNodes << endl;
+
+        for (int i = 0; i < numLevelNodes; i++) {
+            Node* newNode = new Node(dimensions, false);
+            newNode->setLevel(level + 1);
+
+            int startIndex = i * maxEntries;
+            int endIndex = min(startIndex + maxEntries, static_cast<int>(levelNodes.size()));
+            for (int j = startIndex; j < endIndex; j++) {
+                Entry* entry = new Entry();
+                entry->childNode = levelNodes[j];
+                entry->boundingBox = levelNodes[j]->adjustBoundingBoxes();
+                newNode->insertEntry(entry);
+            }
+
+            newLevelNodes.push_back(newNode);
+        }
+
+        level++;
+        levelNodes = newLevelNodes;
+    }
+
+    // The root node is the last remaining node in the level nodes
+    cout << "bottom up" << endl;
+    newRStarTree *rStarTreeFromIndex = new newRStarTree(maxEntries, dimensions, maxObjectSize);
+    rStarTreeFromIndex->setRoot(leafNodes[0]);
+
     indexFile.close();
     dataFile.close();
     csvFile.close();
