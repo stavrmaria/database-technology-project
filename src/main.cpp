@@ -15,7 +15,7 @@ using namespace std;
 string doubleToBinaryString(double);
 string zOrderValue(vector<double>);
 newRStarTree *constructFromIndex(const string &indexFileName);
-newRStarTree* bulkLoad(const vector<Point>& sortedPoints, int maxEntries, int dimensions, int maxObjectSize);
+newRStarTree* bulkLoad(vector<Point>& sortedPoints, int maxEntries, int dimensions, int maxObjectSize);
 
 int main() {
     // Set the points attributes

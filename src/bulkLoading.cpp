@@ -226,7 +226,7 @@ newRStarTree* bulkLoad(vector<Point>& sortedPoints, int maxEntries, int dimensio
     }
 
     // Put the points to the leaf nodes
-    int leafNodeIndex = 0;
+    int leafNodeIndex = 1;
     for (const Point& point : sortedPoints) {
         Entry* entry = new Entry();
         entry->childNode = nullptr;
