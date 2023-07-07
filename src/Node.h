@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <fstream>
 #include "Point.h"
 #include "BoundingBox.h"
 
@@ -42,6 +43,8 @@ class Node {
         Entry* minOverlapEntry(const Entry*, double&) const;
         Entry *minEnlargedAreaEntry(const Entry*, double&) const;
         bool operator==(const Node& other) const;
+        void serializeNode(fstream&);
+        void deserializeNode(ifstream&);
 };
 
 // Struct that represents each entry of a given node

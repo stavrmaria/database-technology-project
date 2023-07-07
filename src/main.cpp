@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <sstream>
-//#include <filesystem>
 #include <chrono>
 
 using namespace std;
@@ -15,7 +14,6 @@ using namespace std;
 string doubleToBinaryString(double);
 string zOrderValue(vector<double>);
 newRStarTree *constructFromIndex(const string &indexFileName);
-newRStarTree* bulkLoad(vector<Point>& sortedPoints, int maxEntries, int dimensions, int maxObjectSize);
 
 int main() {
     // Set the points attributes
@@ -73,7 +71,7 @@ int main() {
     dataFile << "BLOCK" << blockCount << endl;
 
     // Read each line of the file and parse it into a Point structure
-    /*auto startTime = chrono::high_resolution_clock::now();
+    auto startTime = chrono::high_resolution_clock::now();
     while (getline(sortedCsvFile, line)) {
         Point point = parsePoint(line);
         string record = point.toString();
@@ -91,27 +89,19 @@ int main() {
         currentBlockSize += maxObjectSize;
     }
     auto endTime = chrono::high_resolution_clock::now();
-    chrono::duration<double, std::micro> duration = endTime - startTime;*/
+    chrono::duration<double, std::micro> duration = endTime - startTime;
 
-    // Save the R* tree index to the index file and the data file
-    // if (rStarTree->saveIndex(INDEX_FILE) == 1)
-    //     return 1;
+    cout << "Insertion completed." << endl;
+    cout << "Execution time: " << duration.count() << " milliseconds" << endl;
 
-     vector<Point> sortedPoints;
-     while (getline(sortedCsvFile, line)) {
-         Point point = parsePoint(line);
-         sortedPoints.push_back(point);
-     }
-
-
-    newRStarTree *rStarTreeFromIndex = nullptr;
-    rStarTreeFromIndex = bulkLoad(sortedPoints, maxEntries, dimensions, maxObjectSize);
-    rStarTreeFromIndex->display();
-
-    /*BoundingBox bb(dimensions, vector<double>{4, 2}, vector<double> {8, 5});
+    //auto startTime2 = chrono::high_resolution_clock::now();
+    BoundingBox bb(dimensions, vector<double>{4, 2}, vector<double> {8, 5});
     vector<ID> res = rStarTree->rangeQuery(bb);
     for (int i = 0; i < res.size(); i++)
         cout << findObjectById(res.at(i), pointsPerBlock).getID() << endl;
+
+    // auto endTime2 = chrono::high_resolution_clock::now();
+    // chrono::duration<double, std::micro> duration2 = endTime - startTime;    
 
     cout<<"-----"<<endl;
 
@@ -125,39 +115,84 @@ int main() {
     vector<ID> sres = rStarTree->skylineQuery();
     for(int i = 0; i < sres.size(); i++)
         cout << findObjectById(sres.at(i), pointsPerBlock).getID() << endl;
-    cout<<"-----"<<endl;*/
+    cout<<"-----"<<endl;
 
-    // rStarTree->display(); 
-    // cout<<"-----"<<endl;
+    Point deleteP({1, 1});
+    rStarTree->deletePoint(deleteP);
 
-    // cout << "Insertion completed." << endl;
-    // cout << "Execution time: " << duration.count() << " milliseconds" << endl;
+    /*cout << "bottom up" << endl;
 
-    // Point deleteP({1, 1});
-    // rStarTree->deletePoint(deleteP);
-    // rStarTree->display();
+    vector<Node*> leafNodes = {};
+    Node *currentLeafNode = new Node(dimensions, true);
+    leafNodes.push_back(currentLeafNode);
+    while (getline(sortedCsvFile, line)) {
+        Point point = parsePoint(line);
+        string record = point.toString();
 
-    // Save the R* tree index to the index file and the data file
-    // if (rStarTree->saveIndex(INDEX_FILE) == 1)
-    //     return 1;
-    // cout << "Leaves of the R* Tree:" << endl;
-    // rStarTree->display();
-    // Save the R* tree index to the index file and the data file
+        if (currentBlockSize + maxObjectSize > BLOCK_SIZE) {
+            leafNodes.push_back(currentLeafNode);
+            currentLeafNode = new Node(dimensions, true);
+            currentBlockSize = 0;
+            slot = 0;
+            dataFile << "BLOCK" << ++blockCount << endl;
+        }
+
+        // Write point into datafile and insert it to the tree
+        dataFile << record << endl;
+
+        Entry *entry = new Entry();
+        entry->childNode = nullptr;
+        entry->boundingBox = new BoundingBox(dimensions, point.getCoordinates(), point.getCoordinates());
+        entry->id = new ID();
+        entry->id->blockID = blockCount;
+        entry->id->slot = slot;
+        currentLeafNode->insertEntry(entry);
+        currentBlockSize += maxObjectSize;
+
+        slot++;
+    }
+
+    // Bottom-up construction
+    vector<Node*> levelNodes = leafNodes;
+    int level = 0;
+    while (levelNodes.size() > 1) {
+        vector<Node*> newLevelNodes;
+        int numLevelNodes = ceil(levelNodes.size() / maxEntries);
+        cout << numLevelNodes << endl;
+
+        for (int i = 0; i < numLevelNodes; i++) {
+            Node* newNode = new Node(dimensions, false);
+            newNode->setLevel(level + 1);
+
+            int startIndex = i * maxEntries;
+            int endIndex = min(startIndex + maxEntries, static_cast<int>(levelNodes.size()));
+            for (int j = startIndex; j < endIndex; j++) {
+                Entry* entry = new Entry();
+                entry->childNode = levelNodes[j];
+                entry->boundingBox = levelNodes[j]->adjustBoundingBoxes();
+                newNode->insertEntry(entry);
+            }
+
+            newLevelNodes.push_back(newNode);
+        }
+
+        level++;
+        levelNodes = newLevelNodes;
+    }
+
+    // The root node is the last remaining node in the level nodes
+    cout << "bottom up" << endl;
+    newRStarTree *rStarTreeFromIndex = new newRStarTree(maxEntries, dimensions, maxObjectSize);
+    rStarTreeFromIndex->setRoot(leafNodes[0]);*/
+
     if (rStarTree->saveIndex(INDEX_FILE) == 1) {
         cout << "Error: construction of the index was unsuccessful." << endl;
         return 1;
     }
 
-    //  cout << "Leaves of the original R* Tree:" << endl;
-    //  rStarTree->display();
-
     indexFile.close();
     dataFile.close();
     csvFile.close();
-
-    /*newRStarTree *rStarTreeFromIndex = nullptr;
-    rStarTreeFromIndex = constructFromIndex(INDEX_FILE);
-    rStarTreeFromIndex->display();*/
 
     return 0;
 }

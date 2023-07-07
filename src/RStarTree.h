@@ -37,19 +37,20 @@ private:
     void insert(Entry*, Node*, int);
     void destroyNode(Node*);
     void saveIndex(fstream& indexFile, Node *currentNode);
-    void saveData(fstream& dataFile, Node *currentNode);
+    void saveData(int, fstream& dataFile, Node *currentNode);
 public:
     newRStarTree(int, int, int);
     ~newRStarTree();
     void setRoot(Node*);
     Node *getRoot();
+    int getDimensions();
     void insertData(Point&, unsigned int&, unsigned int&);
     void display();
     vector<ID> rangeQuery(BoundingBox &);
     vector<ID> kNearestNeighbors(Point& queryPoint, int k);
     vector<ID> skylineQuery();
     int saveIndex(const string &indexFileName);
-    int saveData(const string &dataFileName);
+    int saveData(int, const string &dataFileName);
 
     void deletePoint(Point&);
     pair<Entry*, Node*> findEntryToDelete(Point& , Node*);

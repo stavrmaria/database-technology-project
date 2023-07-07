@@ -115,7 +115,7 @@ void Node:: deleteEntry(Entry* target) {
     for (auto it = entries.begin(); it != entries.end(); ++it) {
         if (*it == target) {
             entries.erase(it);
-            return;
+            break;
         }
     }
 }
@@ -124,7 +124,7 @@ void Node::removeChild(Node *child) {
     for (int i = 0; i < entries.size(); i++) {
         if (entries[i]->childNode == child) {
             entries.erase(entries.begin() + i);
-            return;
+            break;
         }
     }
 }
@@ -187,4 +187,62 @@ BoundingBox* Node::adjustBoundingBoxes() {
     }
 
     return adjustedBox;
+}
+    
+void Node::serializeNode(fstream& indexFile) {
+    indexFile.write(reinterpret_cast<const char*>(&level), sizeof(int));
+    indexFile.write(reinterpret_cast<const char*>(&dimensions), sizeof(int));
+    indexFile.write(reinterpret_cast<const char*>(&isLeaf), sizeof(bool));
+
+    int n = entries.size();
+    indexFile.write(reinterpret_cast<const char*>(&n), sizeof(int));
+
+    for (const auto& entry : entries) {
+        // Serialize the entry
+        if (entry->id != nullptr) {
+            indexFile.write(reinterpret_cast<const char*>(&entry->id->blockID), sizeof(unsigned long));
+            indexFile.write(reinterpret_cast<const char*>(&entry->id->slot), sizeof(unsigned long));
+        } else {
+            unsigned long k = 0;
+            indexFile.write(reinterpret_cast<const char*>(&k), sizeof(unsigned long));
+            indexFile.write(reinterpret_cast<const char*>(&k), sizeof(unsigned long));
+        }
+
+        if (entry->boundingBox != nullptr) {
+            entry->boundingBox->serialize(indexFile);
+        }
+    }
+}
+
+void Node::deserializeNode(ifstream& indexFile) {
+    indexFile.read(reinterpret_cast<char*>(&level), sizeof(int));
+    indexFile.read(reinterpret_cast<char*>(&dimensions), sizeof(int));
+    indexFile.read(reinterpret_cast<char*>(&isLeaf), sizeof(bool));
+
+    if (level == 0)
+        isLeaf = true;
+
+    int n;
+    indexFile.read(reinterpret_cast<char*>(&n), sizeof(int));
+    entries.clear();
+
+    for (int i = 0; i < n; i++) {
+        auto entry = new Entry();
+        entry->id = new ID();
+        entry->boundingBox = new BoundingBox(dimensions);
+
+        indexFile.read(reinterpret_cast<char*>(&entry->id->blockID), sizeof(unsigned long));
+        indexFile.read(reinterpret_cast<char*>(&entry->id->slot), sizeof(unsigned long));
+        if (entry->id->blockID == 0 && entry->id->slot == 0) {
+            delete entry->id;
+            entry->id = nullptr;
+        }
+
+        entry->boundingBox->deserialize(indexFile);  // Deserialize the bounding box
+
+        // Initialize child node to nullptr
+        entry->childNode = nullptr;
+
+        entries.push_back(entry);
+    }
 }
